@@ -1,0 +1,17 @@
+﻿@page "/login"
+@inherits LoginBase
+
+<h1>Login</h1>
+
+<div>
+    <EditForm OnSubmit="Creer" Model="ProposedCredentials">
+        <div>
+            Login : <input type="text" @bind-value="@ProposedCredentials.login" />
+        </div>
+        <div>
+            Mot de passe : <input type="password" @bind-value="@ProposedCredentials.pwd" />
+        </div>
+        <button type="submit" class="btn btn-primary">Connecter</button>
+    </EditForm>
+    <p>@resultat</p>
+</div>

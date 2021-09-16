@@ -1,0 +1,142 @@
+﻿@page "/personnes"
+@using BadSecApp.Shared
+@using Microsoft.AspNetCore.WebUtilities
+@using System.Web
+@inject HttpClient Http
+@inject NavigationManager Nav
+
+<h1>Liste des personnes</h1>
+
+<p>Filtre : <input type="text" id="zonefiltre" @bind="filtre" /><button @onclick="Navigate">Rafraîchir liste</button></p>
+<p>
+    <button @onclick="Tentative1">Test 1</button>
+    <button @onclick="Tentative2">Test 2</button>
+    <button @onclick="Tentative3">Test 3</button>
+    <button @onclick="Tentative4">Test 4</button>
+</p>
+
+@if (personnes == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Nom</th>
+                <th>Prénom</th>
+                <th>Age</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var personne in personnes)
+            {
+                <tr>
+                    <td>@personne.Nom</td>
+                    <td>@personne.Prenom</td>
+                    <td>@personne.Age.ToString()</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+<p class="invisible" id="debug">@DebugMessage</p> <!-- SECU : ne jamais renvoyer des messages développeur pour aider ou alors, au pire, les mettre dans un #if DEBUG -->
+
+<h1>Ajouter une personne</h1>
+
+<div>
+    <EditForm OnSubmit="Creer" Model="PersonneEnCreation">
+        <div>
+            Nom : <input type="text" @bind-value="@PersonneEnCreation.Nom" />
+        </div>
+        <div>
+            Prénom : <input type="text" @bind-value="@PersonneEnCreation.Prenom" />
+        </div>
+        <div>
+            Age : <input type="text" @bind-value="@PersonneEnCreation.Age" />
+        </div>
+        <button type="submit" class="btn btn-primary">Créer nouvelle demande</button>
+    </EditForm>
+    <p id="resultatCreation">@CreationMessage</p>
+    <p>
+        <button @onclick="Tentative5">Test 5</button>
+    </p>
+</div>
+
+@code {
+    private Personne PersonneEnCreation = new Personne() { Age = 20 };
+
+    async void Creer()
+    {
+        try
+        {
+            var resultat = await Http.PostAsJsonAsync<Personne>("api/Personnes", PersonneEnCreation);
+            resultat.EnsureSuccessStatusCode();
+            CreationMessage = "Personne créée";
+        }
+        catch
+        {
+            CreationMessage = "Problème lors de la création";
+        }
+        this.StateHasChanged();
+    }
+
+    private string CreationMessage;
+
+    private Personne[] personnes;
+
+    private string DebugMessage;
+
+    private string filtre { get; set; } = string.Empty;
+
+    void Navigate()
+    {
+        //var query = new Dictionary<string, string> { { "indicationNom", filtre } };
+        //Nav.NavigateTo(QueryHelpers.AddQueryString(Nav.Uri, query)); (ne navigue que dans l'URL locale, bref dans l'history, mais ne recharge pas la page)
+
+        // Juste pour faire voir le force reload ; normalement, on changerait plutôt les données par un appel d'API réalisé par le client WASM
+        Nav.NavigateTo("/personnes?indicationNom=" + HttpUtility.UrlEncode(filtre), forceLoad: true); // SECU : rend plus simple l'injection, car elle peut être réalisée directement depuis le client et le paramètre est visible
+    }
+
+    void Tentative1()
+    {
+        filtre = "' UNION SELECT name FROM sqlite_master WHERE type='table' --";
+    }
+
+    void Tentative2()
+    {
+        filtre = "' UNION SELECT name, name, 0 FROM sqlite_master WHERE type='table' --";
+    }
+
+    void Tentative3()
+    {
+        filtre = "' UNION SELECT name, name, 0 FROM pragma_table_info('CONTRATS') --";
+    }
+
+    void Tentative4()
+    {
+        filtre = "' UNION SELECT entreprise, sujet, montant FROM CONTRATS --";
+    }
+
+    void Tentative5()
+    {
+        PersonneEnCreation.Nom = "', '', 0); DROP TABLE PERSONNES --";
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        string indicationNom = null;
+        var uri = Nav.ToAbsoluteUri(Nav.Uri);
+        if (QueryHelpers.ParseQuery(uri.Query).TryGetValue("indicationNom", out var valeurs))
+            indicationNom = valeurs[0];
+
+        string filtre = indicationNom is null ? string.Empty : "?IndicationNom=" + indicationNom;
+        var resultat = await Http.GetFromJsonAsync<Tuple<Personne[], string>>("api/Personnes" + filtre);
+        personnes = resultat.Item1.ToArray();
+        DebugMessage = resultat.Item2;
+        this.StateHasChanged();
+    }
+
+}
