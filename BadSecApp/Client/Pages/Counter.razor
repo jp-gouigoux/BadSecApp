@@ -1,16 +1,59 @@
 ﻿@page "/counter"
+@inject HttpClient HttpClient
+@inject Microsoft.Extensions.Configuration.IConfiguration configuration
+@using Microsoft.AspNetCore.WebUtilities
+@inject NavigationManager Nav
 
 <h1>Counter</h1>
 
-<p>Current count: @currentCount</p>
-
+<p>Current count : @currentCount</p>
 <button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
+
+<p>Un peu de publicité par nos sponsors :</p>
+@((MarkupString)myMarkup)
 
 @code {
     private int currentCount = 0;
 
-    private void IncrementCount()
+    private async Task IncrementCount()
     {
         currentCount++;
+
+        // SECU (A05:2021 – Security Misconfiguration)
+        // Plusieurs informations sensibles sont stockées dans le fichier de configuration qui est retourné au client (il peut etre lu dans la partie réseau du navigateur)
+        // Une configuration contient un chemin d'accès complet => Full Path Disclosure
+        // Ce chemin est ensuite envoyé au serveur pour manipulation
+        string path = configuration["RootPath"];
+        var reponse = await HttpClient.GetAsync($"api/Counter?valeur={currentCount}&path={path}");
+    }
+
+    private string myMarkup = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var uri = Nav.ToAbsoluteUri(Nav.Uri);
+        var queryStrings = QueryHelpers.ParseQuery(uri.Query);
+        if (queryStrings.TryGetValue("pub", out var name))
+        {
+            if (int.TryParse(name, out var numPub))
+            {
+                string URLProxyPublicite = configuration["ServeurPublicite"] + "?page=" + numPub;
+                Console.Write("Publicite : " + URLProxyPublicite);
+                myMarkup = await HttpClient.GetStringAsync(URLProxyPublicite);
+            }
+        }
+
+        // Mettre en plus du CORS * pour faire voir qu'on peut faire pointer ailleurs sur un site qui renvoie le script de redirection chez eux
+
+        //myMarkup = "<p class='markup'>This is a <em>markup string</em>.</p>    <button class='btn btn-primary'>Button</button><img alt='image' src='http://gouigoux.com/img/bouba.png' onload='alert(\"bidule\")'/>";
+        
+        //myMarkup = @"<html>
+        //    <body>
+        //        <p>Abonnez-vous à mon blog !</p>
+        //        <img src='http://gouigoux.com/blog-fr/wp-content/uploads/2013/03/Banniere1.png'/>
+        //    </body>
+        //</html>";
+        
+        base.OnInitialized();
     }
 }

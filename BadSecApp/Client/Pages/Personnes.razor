@@ -97,7 +97,7 @@ else
         //Nav.NavigateTo(QueryHelpers.AddQueryString(Nav.Uri, query)); (ne navigue que dans l'URL locale, bref dans l'history, mais ne recharge pas la page)
 
         // Juste pour faire voir le force reload ; normalement, on changerait plutôt les données par un appel d'API réalisé par le client WASM
-        Nav.NavigateTo("/personnes?indicationNom=" + HttpUtility.UrlEncode(filtre), forceLoad: true); // SECU : rend plus simple l'injection, car elle peut être réalisée directement depuis le client et le paramètre est visible
+        Nav.NavigateTo("/personnes?indicationNom=" + HttpUtility.UrlEncode(filtre), forceLoad: true); // SECU (A03:2021-Injection) : rend plus simple l'injection, car elle peut être réalisée directement depuis le client et le paramètre est visible
     }
 
     void Tentative1()
