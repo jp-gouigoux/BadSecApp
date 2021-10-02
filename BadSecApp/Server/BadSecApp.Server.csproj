@@ -17,5 +17,9 @@
     <ProjectReference Include="..\Shared\BadSecApp.Shared.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="wwwroot\" />
+  </ItemGroup>
+
 
 </Project>

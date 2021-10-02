@@ -40,6 +40,11 @@ namespace BadSecApp.Server
                 commande.CommandText = "DROP TABLE IF EXISTS PERSONNES; CREATE TABLE PERSONNES (nom VARCHAR(32), prenom VARCHAR(32), age INT)";
                 commande.ExecuteNonQuery();
 
+                conn.Open();
+                commande = conn.CreateCommand();
+                commande.CommandText = "DROP TABLE IF EXISTS PHOTOS; CREATE TABLE PHOTOS (nom VARCHAR(32), url VARCHAR(32))";
+                commande.ExecuteNonQuery();
+
                 commande = conn.CreateCommand();
                 commande.CommandText = "DROP TABLE IF EXISTS CONTRATS; CREATE TABLE CONTRATS (entreprise VARCHAR(32), sujet VARCHAR(32), montant INT)";
                 commande.ExecuteNonQuery();
@@ -50,6 +55,10 @@ namespace BadSecApp.Server
 
                 commande = conn.CreateCommand();
                 commande.CommandText = "INSERT INTO PERSONNES (nom, prenom, age) VALUES ('Lagaffe', 'Gaston', 63)";
+                commande.ExecuteNonQuery();
+
+                commande = conn.CreateCommand();
+                commande.CommandText = "INSERT INTO PHOTOS (nom, url) VALUES ('Lagaffe', 'gaston.png')";
                 commande.ExecuteNonQuery();
 
                 commande = conn.CreateCommand();
