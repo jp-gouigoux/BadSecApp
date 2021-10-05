@@ -27,7 +27,7 @@ namespace ProxyPublicite.Controllers
         [HttpGet]
         public string Get([FromQuery] int page = 0)
         {
-            // SECU (A04:2021-Insecure Design) : il faut injecter le client plutôt que le recréer à chaque fois, sinon risque de facilitation de DDOS (ressource lourde à créer)
+            // SECU
             HttpClient client = new HttpClient();
             if (page < 0 || page >= Publicites.Count)
                 return "<p>Pas de publicité pour cette fois !</p>";
@@ -38,7 +38,7 @@ namespace ProxyPublicite.Controllers
         [HttpPost]
         public int Post()
         {
-            // SECU (A10:2021-Server-Side Request Forgery) : Cette API permet d'injecter des URLs quelconques qui seront lues comme des publicités, et elle est facile à trouver, même sans Swagger
+            // SECU
             using (StreamReader reader = new StreamReader(Request.Body, Encoding.UTF8))
                 Publicites.Add(reader.ReadToEndAsync().Result);
             return Publicites.Count - 1;

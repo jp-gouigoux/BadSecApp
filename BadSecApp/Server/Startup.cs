@@ -23,7 +23,7 @@ namespace BadSecApp.Server
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
-            // SECU (A04:2021-Insecure Design) : voir plus bas
+            // SECU
             services.AddSession();
 
             services.AddControllersWithViews();
@@ -66,12 +66,12 @@ namespace BadSecApp.Server
                 commande.ExecuteNonQuery();
 
                 commande = conn.CreateCommand();
-                commande.CommandText = "INSERT INTO USERS (login, hash) VALUES ('user', 'f71dbe52628a3f83a77ab494817525c6')"; // SECU (A02:2021-Cryptographic Failures) : donnée sensible pas assez obfusquée (MD5 de toto) et présente dans le code, donc dans le GitHub visible de tous
+                commande.CommandText = "INSERT INTO USERS (login, hash) VALUES ('user', 'f71dbe52628a3f83a77ab494817525c6')"; // SECU
                 commande.ExecuteNonQuery();
             }
 
-            string ChaineConnexion = Configuration.GetConnectionString("DefaultConnection"); // SECU (A04:2021-Insecure Design) : la chaîne de connexion devrait utiliser la sécurité intégrée et pas afficher le mot de passe en clair
-            if (ChaineConnexion.Contains("password")) throw new ApplicationException(); // SECU (A05:2021-Security Misconfiguration) : cette tentative de sécurité est mal faite car elle ne prend pas en compte la casse, et est donc inefficace ; de plus, elle agit sur un symptome plutôt que sur la cause, ce qui n'est pas une bonne pratique
+            string ChaineConnexion = Configuration.GetConnectionString("DefaultConnection"); // SECU
+            if (ChaineConnexion.Contains("password")) throw new ApplicationException(); // SECU
 
             if (env.IsDevelopment())
             {
@@ -86,7 +86,7 @@ namespace BadSecApp.Server
             app.UseBlazorFrameworkFiles();
             app.UseStaticFiles();
 
-            // SECU (A04:2021-Insecure Design) : inactif par défaut, toute augmentation de la surface d'attaque peut poser problème (ainsi que pour la montée en charge, dans ce cas précis, à cause des affinités de sessions)
+            // SECU
             app.UseSession();
 
             app.UseRouting();
