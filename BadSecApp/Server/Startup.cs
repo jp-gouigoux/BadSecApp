@@ -23,7 +23,6 @@ namespace BadSecApp.Server
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
-            // SECU
             services.AddSession();
 
             services.AddControllersWithViews();
@@ -66,12 +65,12 @@ namespace BadSecApp.Server
                 commande.ExecuteNonQuery();
 
                 commande = conn.CreateCommand();
-                commande.CommandText = "INSERT INTO USERS (login, hash) VALUES ('user', 'f71dbe52628a3f83a77ab494817525c6')"; // SECU
+                commande.CommandText = "INSERT INTO USERS (login, hash) VALUES ('user', 'f71dbe52628a3f83a77ab494817525c6')";
                 commande.ExecuteNonQuery();
             }
 
-            string ChaineConnexion = Configuration.GetConnectionString("DefaultConnection"); // SECU
-            if (ChaineConnexion.Contains("password")) throw new ApplicationException(); // SECU
+            string ChaineConnexion = Configuration.GetConnectionString("DefaultConnection");
+            if (ChaineConnexion.Contains("password")) throw new ApplicationException();
 
             if (env.IsDevelopment())
             {
@@ -86,7 +85,6 @@ namespace BadSecApp.Server
             app.UseBlazorFrameworkFiles();
             app.UseStaticFiles();
 
-            // SECU
             app.UseSession();
 
             app.UseRouting();

@@ -27,7 +27,6 @@ namespace ProxyPublicite.Controllers
         [HttpGet]
         public string Get([FromQuery] int page = 0)
         {
-            // SECU
             HttpClient client = new HttpClient();
             if (page < 0 || page >= Publicites.Count)
                 return "<p>Pas de publicité pour cette fois !</p>";
@@ -38,7 +37,6 @@ namespace ProxyPublicite.Controllers
         [HttpPost]
         public int Post()
         {
-            // SECU
             using (StreamReader reader = new StreamReader(Request.Body, Encoding.UTF8))
                 Publicites.Add(reader.ReadToEndAsync().Result);
             return Publicites.Count - 1;

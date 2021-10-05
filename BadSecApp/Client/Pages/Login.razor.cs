@@ -22,7 +22,6 @@ namespace BadSecApp.Client.Pages
         protected async void Creer()
         {
             HttpResponseMessage retour = await http.GetAsync("api/Authentication?login=" + ProposedCredentials.login + "&pwd=" + ProposedCredentials.pwd);
-            // SECU
             resultat = retour.IsSuccessStatusCode ? "Vous êtes connecté en tant que " + ProposedCredentials.login : "Authentification incorrecte";
             this.StateHasChanged();
 

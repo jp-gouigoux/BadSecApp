@@ -22,7 +22,7 @@ namespace BadSecApp.Server.Controllers
                 {
                     conn.Open();
                     var commande = conn.CreateCommand();
-                    commande.CommandText = "INSERT INTO PERSONNES (nom, prenom, age) VALUES ('" + personne.Nom + "', '" + personne.Prenom + "', " + personne.Age.ToString() + ")"; // SECU
+                    commande.CommandText = "INSERT INTO PERSONNES (nom, prenom, age) VALUES ('" + personne.Nom + "', '" + personne.Prenom + "', " + personne.Age.ToString() + ")";
                     commande.ExecuteNonQuery();
 
                     commande = conn.CreateCommand();
@@ -53,7 +53,6 @@ namespace BadSecApp.Server.Controllers
                     var commande = conn.CreateCommand();
                     commande.CommandText = "SELECT nom, prenom, age FROM PERSONNES WHERE nom LIKE '%" + IndicationNom + "%'";
 
-                    // SECU
                     using (var reader = commande.ExecuteReader())
                     {
                         while (reader.Read())
@@ -68,7 +67,6 @@ namespace BadSecApp.Server.Controllers
                         }
                     }
 
-                    // SECU
                     foreach (Personne p in donnees)
                     {
                         commande = conn.CreateCommand();
@@ -108,7 +106,6 @@ namespace BadSecApp.Server.Controllers
                     }
                     else
                     {
-                        // SECU
                         sb.Append("<h1>").Append(nom).Append(" ne fait pas partie de notre annuaire !").AppendLine("</h1>");
                     }
                 }
@@ -119,7 +116,7 @@ namespace BadSecApp.Server.Controllers
                 using (var reader = commande.ExecuteReader())
                 {
                     if (reader.Read())
-                        sb.Append("<img src=\"").Append(reader.GetString(0)).AppendLine("\"/>"); // SECU
+                        sb.Append("<img src=\"").Append(reader.GetString(0)).AppendLine("\"/>");
                 }
             }
 

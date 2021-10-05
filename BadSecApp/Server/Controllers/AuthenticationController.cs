@@ -29,7 +29,7 @@ namespace BadSecApp.Server.Controllers
             if (login is null) throw new ArgumentException("login cannot be empty");
             if (pwd is null) pwd = string.Empty;
             
-            bool isAuthenticated = true; // SECU
+            bool isAuthenticated = true;
             try
             {
                 var content = MD5.Create().ComputeHash(Encoding.UTF8.GetBytes(pwd));
@@ -38,7 +38,7 @@ namespace BadSecApp.Server.Controllers
                     sb.Append(b.ToString("x2"));
                 string hash = sb.ToString().ToLower();
 
-                if (login == "admin" && hash != "84d961568a65073a3bcf0eb216b2a576") // SECU
+                if (login == "admin" && hash != "84d961568a65073a3bcf0eb216b2a576")
                     isAuthenticated = false;
                 else if (login != "admin")
                 {
@@ -47,7 +47,7 @@ namespace BadSecApp.Server.Controllers
                         conn.Open();
                         var commande = conn.CreateCommand();
                         commande.CommandText = "SELECT hash FROM USERS WHERE login='" + login + "'";
-                        if (commande.ExecuteScalar()?.ToString() != hash) // SECU
+                        if (commande.ExecuteScalar()?.ToString() != hash)
                             isAuthenticated = false;
                     }
                 }
@@ -64,7 +64,6 @@ namespace BadSecApp.Server.Controllers
             }
             else
             {
-                // SECU
                 return new UnauthorizedResult();
             }
         }
@@ -72,7 +71,6 @@ namespace BadSecApp.Server.Controllers
         [HttpGet("validate")]
         public StatusCodeResult ValidateUsersList(string xmlContent)
         {
-            // SECU
             XmlDocument dom = new XmlDocument();
             dom.LoadXml(xmlContent);
             if (dom.SelectNodes("//users").Count > 0)

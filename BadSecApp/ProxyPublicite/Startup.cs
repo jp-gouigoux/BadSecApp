@@ -39,7 +39,6 @@ namespace ProxyPublicite
 
             app.UseRouting();
 
-            // SECU
             app.UseCors(
                 options => options.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader().SetPreflightMaxAge(TimeSpan.FromSeconds(1000))
             );

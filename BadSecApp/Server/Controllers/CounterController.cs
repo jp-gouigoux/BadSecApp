@@ -15,7 +15,6 @@ namespace BadSecApp.Server.Controllers
         [HttpGet]
         public IActionResult Envoyer(string valeur, string path)
         {
-            // SECU
             string dossier = Path.Combine(path, valeur);
 
             if (Directory.Exists(dossier))

@@ -16,7 +16,7 @@ namespace BadSecApp.Server.Controllers
             using (var csv = new CsvReader(reader))
             using (var csvData = new CsvDataReader(csv))
             {
-                return csvData.FieldCount; // SECU
+                return csvData.FieldCount;
             }
         }
     }
