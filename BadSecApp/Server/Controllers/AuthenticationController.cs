@@ -69,7 +69,7 @@ namespace BadSecApp.Server.Controllers
             }
         }
 
-        [HttpGet]
+        [HttpGet("validate")]
         public StatusCodeResult ValidateUsersList(string xmlContent)
         {
             // SECU (A08:2021-Software and Data Integrity Failures) : potentielle attaque par XML bombing, si on laisse du contenu entrer tel quel et qu'on ne met pas de validation ou de limite sur les ressources (mais pas facile à blinder)

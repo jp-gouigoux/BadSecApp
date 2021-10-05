@@ -36,6 +36,7 @@ else
                     <td>@personne.Nom</td>
                     <td>@personne.Prenom</td>
                     <td>@personne.Age.ToString()</td>
+                    <td><img src="@personne.UrlPhoto"/></td>
                 </tr>
             }
         </tbody>
@@ -57,11 +58,18 @@ else
         <div>
             Age : <input type="text" @bind-value="@PersonneEnCreation.Age" />
         </div>
+        <div>
+@*            Le bind protège de l'injection !
+*@            URL Photo : <input type="text" @bind-value="@PersonneEnCreation.UrlPhoto" />
+        </div>
         <button type="submit" class="btn btn-primary">Créer nouvelle demande</button>
     </EditForm>
     <p id="resultatCreation">@CreationMessage</p>
     <p>
         <button @onclick="Tentative5">Test 5</button>
+    </p>
+    <p>
+        <button @onclick="TentativeXSS6">Test XSS rémanent</button>
     </p>
 </div>
 
@@ -123,6 +131,11 @@ else
     void Tentative5()
     {
         PersonneEnCreation.Nom = "', '', 0); DROP TABLE PERSONNES --";
+    }
+
+    void TentativeXSS6()
+    {
+        PersonneEnCreation.UrlPhoto = "http://gouigoux.com/img/bouba.png\" onload=\"alert('owned!')";
     }
 
     protected override async Task OnInitializedAsync()
