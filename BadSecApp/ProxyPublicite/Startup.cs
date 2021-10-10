@@ -39,9 +39,10 @@ namespace ProxyPublicite
 
             app.UseRouting();
 
-            app.UseCors(
-                options => options.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader().SetPreflightMaxAge(TimeSpan.FromSeconds(1000))
-            );
+            // Remove this because that means controllers could be called from everywhere
+            //app.UseCors(
+            //    options => options.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader().SetPreflightMaxAge(TimeSpan.FromSeconds(1000))
+            //);
 
             app.UseAuthorization();
 

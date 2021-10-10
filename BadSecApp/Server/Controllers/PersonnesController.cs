@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Web;
 
 namespace BadSecApp.Server.Controllers
 {
@@ -21,15 +22,20 @@ namespace BadSecApp.Server.Controllers
                 using (var conn = new SqliteConnection("Data Source=test.db"))
                 {
                     conn.Open();
-                    var commande = conn.CreateCommand();
-                    commande.CommandText = "INSERT INTO PERSONNES (nom, prenom, age) VALUES ('" + personne.Nom + "', '" + personne.Prenom + "', " + personne.Age.ToString() + ")";
-                    commande.ExecuteNonQuery();
+                    using (var commande = conn.CreateCommand())
+                    {
+                        // A03:2021-Injection : Sql Injection => Use Sql Parameters
+                        commande.Parameters.AddWithValue("name", personne.Nom);
+                        commande.Parameters.AddWithValue("firstname", personne.Prenom);
+                        commande.Parameters.AddWithValue("age", personne.Age);
+                        commande.CommandText = "INSERT INTO PERSONNES (nom, prenom, age) VALUES (@name, @firstname, @age)";
+                        commande.ExecuteNonQuery();
 
-                    commande = conn.CreateCommand();
-                    commande.CommandText = "INSERT INTO PHOTOS (nom, url) VALUES (@nom, @url)";
-                    commande.Parameters.Add(new SqliteParameter("nom", personne.Nom));
-                    commande.Parameters.Add(new SqliteParameter("url", personne.UrlPhoto));
-                    commande.ExecuteNonQuery();
+                        commande.CommandText = "INSERT INTO PHOTOS (nom, url) VALUES (@nom, @url)";
+                        commande.Parameters.Add(new SqliteParameter("nom", personne.Nom));
+                        commande.Parameters.Add(new SqliteParameter("url", personne.UrlPhoto));
+                        commande.ExecuteNonQuery();
+                    }
                 }
                 return new CreatedResult("#", personne);
             }
@@ -50,36 +56,46 @@ namespace BadSecApp.Server.Controllers
                 using (var conn = new SqliteConnection("Data Source=test.db"))
                 {
                     conn.Open();
-                    var commande = conn.CreateCommand();
-                    commande.CommandText = "SELECT nom, prenom, age FROM PERSONNES WHERE nom LIKE '%" + IndicationNom + "%'";
-
-                    using (var reader = commande.ExecuteReader())
+                    using (var commande = conn.CreateCommand())
                     {
-                        while (reader.Read())
+                        // A03:2021-Injection : Sql Injection => Use Sql Parameters
+                        commande.Parameters.AddWithValue("indicationNom", $"%{IndicationNom}%");
+                        commande.CommandText = "SELECT nom, prenom, age FROM PERSONNES WHERE nom LIKE @indicationNom";
+
+                        using (var reader = commande.ExecuteReader())
                         {
-                            donnees.Add(
-                                new Personne()
-                                {
-                                    Nom = reader.GetString(0),
-                                    Prenom = reader.GetString(1),
-                                    Age = reader.GetInt32(2)
-                                });
+                            while (reader.Read())
+                            {
+                                donnees.Add(
+                                    new Personne()
+                                    {
+                                        Nom = reader.GetString(0), 
+                                        Prenom = reader.GetString(1), 
+                                        Age = reader.GetInt32(2)
+                                    });
+                            }
                         }
                     }
 
                     foreach (Personne p in donnees)
                     {
-                        commande = conn.CreateCommand();
-                        commande.CommandText = "SELECT url FROM PHOTOS WHERE nom='" + p.Nom + "'";
-                        var reader = commande.ExecuteReader();
-                        reader.Read();
-                        p.UrlPhoto = reader.GetString(0);
+                        using (var commande = conn.CreateCommand())
+                        {
+                            commande.Parameters.AddWithValue("name", p.Nom);
+                            commande.CommandText = "SELECT url FROM PHOTOS WHERE nom=@name";
+                            using (var reader = commande.ExecuteReader())
+                            {
+                                reader.Read();
+                                p.UrlPhoto = reader.GetString(0);
+                            }
+                        }
                     }
                 }
             }
-            catch (Exception ex)
+            catch
             {
-                erreur = ex.ToString();
+                // 
+                erreur = "An error occured";
             }
             return new Tuple<List<Personne>, string>(donnees, erreur);
         }
@@ -94,29 +110,40 @@ namespace BadSecApp.Server.Controllers
             using (var conn = new SqliteConnection("Data Source=test.db"))
             {
                 conn.Open();
-                var commande = conn.CreateCommand();
-                commande.CommandText = "SELECT prenom, age FROM PERSONNES WHERE nom=@nom";
-                commande.Parameters.Add(new SqliteParameter("nom", nom));
-                using (var reader = commande.ExecuteReader())
+                using (var commande = conn.CreateCommand())
                 {
-                    if (reader.Read())
+                    // A03:2021-Injection : Sql Injection => Use Sql Parameters
+                    commande.CommandText = "SELECT prenom, age FROM PERSONNES WHERE nom=@nom";
+                    commande.Parameters.Add(new SqliteParameter("nom", nom));
+                    using (var reader = commande.ExecuteReader())
                     {
-                        sb.Append("<h1>").Append(reader.GetString(0)).Append(" ").Append(nom).AppendLine("</h1>");
-                        sb.Append("<p>Agé.e de ").Append(reader.GetInt32(1).ToString()).AppendLine(" ans</p>");
-                    }
-                    else
-                    {
-                        sb.Append("<h1>").Append(nom).Append(" ne fait pas partie de notre annuaire !").AppendLine("</h1>");
+                        // A03:2021-Injection : XSS Injection => Use HttpEncode
+                        var input = HttpUtility.HtmlEncode(nom);
+                        var name = HttpUtility.HtmlEncode(reader.GetString(0));
+                        var age = HttpUtility.HtmlEncode(reader.GetInt32(1).ToString());
+
+                        if (reader.Read())
+                        {
+                            sb.Append("<h1>").Append(name).Append(" ").Append(input).AppendLine("</h1>");
+                            sb.Append("<p>Agé.e de ").Append(age).AppendLine(" ans</p>");
+                        }
+                        else
+                        {
+                            sb.Append("<h1>").Append(input).Append(" ne fait pas partie de notre annuaire !").AppendLine("</h1>");
+                        }
                     }
                 }
 
-                commande = conn.CreateCommand();
-                commande.CommandText = "SELECT url FROM PHOTOS WHERE nom=@nom";
-                commande.Parameters.Add(new SqliteParameter("nom", nom));
-                using (var reader = commande.ExecuteReader())
+                using (var commande = conn.CreateCommand())
                 {
-                    if (reader.Read())
-                        sb.Append("<img src=\"").Append(reader.GetString(0)).AppendLine("\"/>");
+                    // A03:2021-Injection : Sql Injection => Use Sql Parameters
+                    commande.CommandText = "SELECT url FROM PHOTOS WHERE nom=@nom";
+                    commande.Parameters.Add(new SqliteParameter("nom", nom));
+                    using (var reader = commande.ExecuteReader())
+                    {
+                        if (reader.Read())
+                            sb.Append("<img src=\"").Append(HttpUtility.HtmlEncode(reader.GetString(0))).AppendLine("\"/>"); // A03:2021-Injection : XSS Injection => Use HttpEncode
+                    }
                 }
             }
 

@@ -1,6 +1,7 @@
 ﻿using BadSecApp.Shared;
 using Microsoft.AspNetCore.Components;
 using System.Net.Http;
+using System.Web;
 
 namespace BadSecApp.Client.Pages
 {
@@ -22,12 +23,12 @@ namespace BadSecApp.Client.Pages
         protected async void Creer()
         {
             HttpResponseMessage retour = await http.GetAsync("api/Authentication?login=" + ProposedCredentials.login + "&pwd=" + ProposedCredentials.pwd);
-            resultat = retour.IsSuccessStatusCode ? "Vous êtes connecté en tant que " + ProposedCredentials.login : "Authentification incorrecte";
+            resultat = retour.IsSuccessStatusCode ? "Vous êtes connecté en tant que " + HttpUtility.HtmlEncode(ProposedCredentials.login) : "Authentification incorrecte"; // Fix XSS injection
             this.StateHasChanged();
 
             Shared.NavMenu.SetMenusVisibility(
                 MenuPersonnesVisible: retour.IsSuccessStatusCode, 
-                MenuContratsVisible: retour.IsSuccessStatusCode && ProposedCredentials.login == "admin");
+                MenuContratsVisible: retour.IsSuccessStatusCode); // Remove this from client side, That should never be handled by the client app, if you need to allow things based on user rôle implements authorization with OpenId, or LDAP, ... !
         }
     }
 }
