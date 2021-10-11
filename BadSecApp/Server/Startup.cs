@@ -107,9 +107,10 @@ namespace BadSecApp.Server
             // On applique la policy CORS globalement sur tous les controllers
             app.UseCors("CorsPolicy");
 
-            // On autorise pas d'être dans une iframe
             app.Use(async (context, next) =>
             {
+                // A05: 2021 – Security Misconfiguration => DENY X-Frame-Options (BTW : I think it is already set by default by .NET)
+                // We could also add other headers to remove server information (ASP.NET version, IIS Version, OS version, ...) that could be exploited by hackers
                 context.Response.Headers.Add("X-Frame-Options", "DENY");
                 await next();
             });
