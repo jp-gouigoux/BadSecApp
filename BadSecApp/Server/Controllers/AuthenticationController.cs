@@ -18,7 +18,7 @@ namespace BadSecApp.Server.Controllers
     [Route("api/[controller]")]
     public class AuthenticationController : Controller
     {
-        private const string SALT = "xe3Y)`?&"; // We could generate a dynamic hash and store it to db
+        private const string SALT = "xe3Y)`?&"; // A proper implementation need a dynamic salt and salt length stored in db
         private readonly ILogger<AuthenticationController> _logger;
 
         public AuthenticationController(ILogger<AuthenticationController> logger)
