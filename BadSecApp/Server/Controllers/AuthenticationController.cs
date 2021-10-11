@@ -10,6 +10,7 @@ using System.Text.Unicode;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml;
+using System.IO;
 
 namespace BadSecApp.Server.Controllers
 {
@@ -110,11 +111,23 @@ namespace BadSecApp.Server.Controllers
         [HttpGet("validate")]
         public StatusCodeResult ValidateUsersList(string xmlContent)
         {
-            XmlDocument dom = new XmlDocument();
-            dom.LoadXml(xmlContent);
-            if (dom.SelectNodes("//users").Count > 0)
+            XmlDocument doc = new XmlDocument();
+
+            using (var stream = new MemoryStream(Encoding.Default.GetBytes(xmlContent)))
+            {
+                var settings = new XmlReaderSettings();
+
+                settings.MaxCharactersFromEntities = 255; // A05:2021 – Security Misconfiguration => Fix Xml bombing
+
+                using (var reader = XmlReader.Create(stream, settings))
+                {
+                    doc.Load(reader);
+                }
+            }
+
+            if (doc.SelectNodes("//users").Count > 0)
                 return new OkResult();
-            //else
+
             return NotFound();
         }
     }
