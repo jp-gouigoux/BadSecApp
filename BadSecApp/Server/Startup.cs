@@ -23,6 +23,21 @@ namespace BadSecApp.Server
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
+            // Paramétrage d'une policy pour CORS afin d'empêcher qu'on puisse
+            // appeler l'API depuis une autre URL que celle du serveur !
+            // On filtre aussi les VERBS HTTP, nos controllers ne gèrent que du POST et du GET
+            services.AddCors(options =>
+            {
+                options.AddPolicy(name: "CorsPolicy",
+                    builder =>
+                    {
+                        builder
+                            .WithOrigins("http://localhost:60024")
+                            .WithMethods("POST", "GET")
+                            .WithHeaders();
+                    });
+            });
+
             services.AddSession();
 
             services.AddControllersWithViews();
@@ -65,12 +80,12 @@ namespace BadSecApp.Server
                 commande.ExecuteNonQuery();
 
                 commande = conn.CreateCommand();
-                commande.CommandText = "INSERT INTO USERS (login, hash) VALUES ('user', 'f71dbe52628a3f83a77ab494817525c6')";
+                commande.CommandText = "INSERT INTO USERS (login, hash) VALUES ('user', 'bb1976026a011ed452856b939eb85443')"; // SHA256 hash : 4VF4$a$t + xe3Y)`?&
                 commande.ExecuteNonQuery();
             }
 
             string ChaineConnexion = Configuration.GetConnectionString("DefaultConnection");
-            if (ChaineConnexion.Contains("password")) throw new ApplicationException();
+            //if (ChaineConnexion.Contains("password")) throw new ApplicationException(); A05:2021 – Security Misconfiguration => Not needed Add Trusted_Connection=True to connectionstring;
 
             if (env.IsDevelopment())
             {
@@ -88,6 +103,18 @@ namespace BadSecApp.Server
             app.UseSession();
 
             app.UseRouting();
+
+            // On applique la policy CORS globalement sur tous les controllers
+            app.UseCors("CorsPolicy");
+
+            app.Use(async (context, next) =>
+            {
+                // A05: 2021 – Security Misconfiguration => DENY X-Frame-Options (BTW : I think it is already set by default by .NET)
+                // We can also remove other headers to hide some server information (ASP.NET version, IIS Version, OS version, ...) that could be exploited by hackers
+                context.Response.Headers.Add("X-Frame-Options", "DENY");
+                context.Response.Headers.Remove("X-Powered-By");
+                await next();
+            });
 
             app.UseEndpoints(endpoints =>
             {

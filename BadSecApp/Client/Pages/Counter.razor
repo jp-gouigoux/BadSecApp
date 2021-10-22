@@ -19,7 +19,7 @@
     {
         currentCount++;
         string path = configuration["RootPath"];
-        var reponse = await HttpClient.GetAsync($"api/Counter?valeur={currentCount}&path={path}");
+        var reponse = await HttpClient.GetAsync($"api/Counter?valeur={currentCount}"); // Remove Path from query, path should be handled on server side
     }
 
     private string myMarkup = string.Empty;
