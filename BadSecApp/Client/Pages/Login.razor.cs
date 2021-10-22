@@ -22,12 +22,13 @@ namespace BadSecApp.Client.Pages
 
         protected async void Creer()
         {
+            // We should never send credentials in GET ! I don't known blazor to change this : A04:2021-Insecure Design
             HttpResponseMessage retour = await http.GetAsync("api/Authentication?login=" + ProposedCredentials.login + "&pwd=" + ProposedCredentials.pwd);
-            resultat = retour.IsSuccessStatusCode ? "Vous êtes connecté en tant que " + HttpUtility.HtmlEncode(ProposedCredentials.login) : "Authentification incorrecte"; // Fix XSS injection
+            resultat = retour.IsSuccessStatusCode ? "Vous êtes connecté en tant que " + HttpUtility.HtmlEncode(ProposedCredentials.login) : "Authentification incorrecte"; // A03:2021-Injection
             this.StateHasChanged();
 
             Shared.NavMenu.SetMenusVisibility(
-                MenuPersonnesVisible: retour.IsSuccessStatusCode, 
+                MenuPersonnesVisible: retour.IsSuccessStatusCode,
                 MenuContratsVisible: retour.IsSuccessStatusCode); // Remove this from client side, That should never be handled by the client app, if you need to allow things based on user rôle implements authorization with OpenId, or LDAP, ... !
         }
     }

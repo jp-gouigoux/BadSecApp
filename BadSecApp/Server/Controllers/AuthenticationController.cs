@@ -26,7 +26,9 @@ namespace BadSecApp.Server.Controllers
             _logger = logger;
         }
 
+        // Login should use HttpPost : A04:2021-Insecure Design
         [HttpGet]
+        //[AutoValidateAntiforgeryToken] //attribute to avoid XSRF attack : A10:2021-Server-Side Request Forgery
         public StatusCodeResult Login([FromQuery] string login, [FromQuery] string pwd)
         {
             if (string.IsNullOrWhiteSpace(login)) throw new ArgumentException("wrong auth"); // Return generic information on auth process
