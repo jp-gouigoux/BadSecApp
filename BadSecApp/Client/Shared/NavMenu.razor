@@ -24,12 +24,22 @@
         </li>
         <li class="@PersonnesMenuCssClass">
             <!-- SECU : marquer en invisible côté client n'est pas une sécurité -->
+            <!--OGZ
+            En effet, les messages à destination des développeurs pourraient être compromettants.
+            Eviter ces messages dans la page client, préférer des logs côté Server.
+            Les styles CSS (comme ici visibility pourraient êrre changés dynamiquement en manipulant le DOM, via  DOM XSS)
+            -->
             <NavLink class="nav-link" href="personnes">
                 <span class="oi oi-person" aria-hidden="true"></span> Personnes
             </NavLink>
         </li>
         <li class="@ContratsMenuCssClass">
             <!-- SECU : marquer en invisible côté client n'est pas une sécurité -->
+            <!--OGZ
+            En effet, les messages à destination des développeurs pourraient être compromettants.
+            Eviter ces messages dans la page client, préférer des logs côté Server.
+            Les styles CSS (comme ici visibility pourraient êrre changés dynamiquement en manipulant le DOM, via  DOM XSS)
+            -->
             <NavLink class="nav-link" href="contrats">
                 <span class="oi oi-credit-card" aria-hidden="true"></span> Contrats
             </NavLink>

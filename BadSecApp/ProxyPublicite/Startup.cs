@@ -40,6 +40,10 @@ namespace ProxyPublicite
             app.UseRouting();
 
             // SECU (A05:2021-Security Misconfiguration) : Pas une bonne pratique d'ouvrir le CORS pour n'importe quelle origine ; il faut être le plus restrictif possible (moindre privilège)
+            /*OGZ
+            A05:2021-Mauvaise configuration de sécurité 
+            Utiliser CORS pour prévenir des appels à nos API depuis un client autre que notre page client : préférer le nom de domaine du Client
+            */
             app.UseCors(
                 options => options.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader().SetPreflightMaxAge(TimeSpan.FromSeconds(1000))
             );

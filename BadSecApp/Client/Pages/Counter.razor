@@ -23,6 +23,24 @@
         // Plusieurs informations sensibles sont stockées dans le fichier de configuration qui est retourné au client (il peut etre lu dans la partie réseau du navigateur)
         // Une configuration contient un chemin d'accès complet => Full Path Disclosure
         // Ce chemin est ensuite envoyé au serveur pour manipulation
+        /*OGZ
+        A05:2021-Mauvaise configuration de sécurité
+        Le fichier Client\wwwroot\appsettings.json est visible dans la console Réseau (Chrome : F12)
+        On peut y lire:
+        {ConnectionStrings: {,…}, RootPath: "C:\Apps\Data",…}
+            ConnectionStrings: {,…}
+            DefaultConnection: "Server=(localdb)\\MSSQLLocalDB;Database=ressourcesHumaines;Trusted_Connection=True;MultipleActiveResultSets=true;pwd=E4Dh7Dye7Do;usr=admin"
+            RootPath: "C:\\Apps\\Data"
+            ServeurPublicite: "http://localhost:33048/publicite"
+        1/ DefaultConnection = Le login/password du serveur SQL est découvert
+        2/ RootPath = Une indication est donnée sur ce qui est sûrement la racine du serveur Web. Cela pourra aider à des attaques futures
+        3/ Le serveur interne de publicité est indiqué
+        Remèdes : ces infos n'ont rien à faire côté client. Il n'y aura pas d'accès à cs infos directement depuis le client.
+        Elles peuvent être simplement présentes dans le fichier du serveur BadSecApp\Server\appsettings.json,
+        qui sera lu dans le controller (api/Counter).
+        Il faudra en revanche adapter pour que les infos de publicité ou issues du serveur SQL soient formattées et renvoyées via l'API.
+        Plus aucun risque.
+        */
         string path = configuration["RootPath"];
         var reponse = await HttpClient.GetAsync($"api/Counter?valeur={currentCount}&path={path}");
     }
@@ -46,14 +64,14 @@
         // Mettre en plus du CORS * pour faire voir qu'on peut faire pointer ailleurs sur un site qui renvoie le script de redirection chez eux
 
         //myMarkup = "<p class='markup'>This is a <em>markup string</em>.</p>    <button class='btn btn-primary'>Button</button><img alt='image' src='http://gouigoux.com/img/bouba.png' onload='alert(\"bidule\")'/>";
-        
+
         //myMarkup = @"<html>
         //    <body>
         //        <p>Abonnez-vous à mon blog !</p>
         //        <img src='http://gouigoux.com/blog-fr/wp-content/uploads/2013/03/Banniere1.png'/>
         //    </body>
         //</html>";
-        
+
         base.OnInitialized();
     }
 }
