@@ -17,33 +17,36 @@
 
 @if (personnes == null)
 {
-    <p><em>Loading...</em></p>
-}
+<p><em>Loading...</em></p> }
 else
 {
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Nom</th>
-                <th>Prénom</th>
-                <th>Age</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var personne in personnes)
-            {
-                <tr>
-                    <td>@personne.Nom</td>
-                    <td>@personne.Prenom</td>
-                    <td>@personne.Age.ToString()</td>
-                    <td><img src="@personne.UrlPhoto"/></td>
-                </tr>
-            }
-        </tbody>
-    </table>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Nom</th>
+            <th>Prénom</th>
+            <th>Age</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var personne in personnes)
+        {
+<tr>
+    <td>@personne.Nom</td>
+    <td>@personne.Prenom</td>
+    <td>@personne.Age.ToString()</td>
+    <td><img src="@personne.UrlPhoto" /></td>
+</tr>
 }
+    </tbody>
+</table>}
 
 <p class="invisible" id="debug">@DebugMessage</p> <!-- SECU : ne jamais renvoyer des messages développeur pour aider ou alors, au pire, les mettre dans un #if DEBUG -->
+<!--OGZ
+En effet, les messages à destination des développeurs pourraient être compromettants.
+Les styles CSS (comme ici invisible pourraient êrre changés dynamiquement en manipulant le DOM, via  DOM XSS)
+Eviter ces messages dans la page client, préférer des logs côté Server.
+-->
 
 <h1>Ajouter une personne</h1>
 
@@ -59,8 +62,8 @@ else
             Age : <input type="text" @bind-value="@PersonneEnCreation.Age" />
         </div>
         <div>
-@*            Le bind protège de l'injection !
-*@            URL Photo : <input type="text" @bind-value="@PersonneEnCreation.UrlPhoto" />
+            @*            Le bind protège de l'injection !
+            *@            URL Photo : <input type="text" @bind-value="@PersonneEnCreation.UrlPhoto" />
         </div>
         <button type="submit" class="btn btn-primary">Créer nouvelle demande</button>
     </EditForm>
@@ -73,8 +76,7 @@ else
     </p>
 </div>
 
-@code {
-    private Personne PersonneEnCreation = new Personne() { Age = 20 };
+@code { private Personne PersonneEnCreation = new Personne() { Age = 20 };
 
     async void Creer()
     {
@@ -106,6 +108,10 @@ else
 
         // Juste pour faire voir le force reload ; normalement, on changerait plutôt les données par un appel d'API réalisé par le client WASM
         Nav.NavigateTo("/personnes?indicationNom=" + HttpUtility.UrlEncode(filtre), forceLoad: true); // SECU (A03:2021-Injection) : rend plus simple l'injection, car elle peut être réalisée directement depuis le client et le paramètre est visible
+        /*OGZ
+        A03:2021-Injection
+        HttpUtility.UrlEncode permet de ne pas passer en clair les filtres, qui pourraient se retrouver dans une requête SQL
+        */
     }
 
     void Tentative1()
@@ -150,6 +156,4 @@ else
         personnes = resultat.Item1.ToArray();
         DebugMessage = resultat.Item2;
         this.StateHasChanged();
-    }
-
-}
+    } }

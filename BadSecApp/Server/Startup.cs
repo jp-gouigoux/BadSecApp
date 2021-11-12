@@ -67,11 +67,25 @@ namespace BadSecApp.Server
 
                 commande = conn.CreateCommand();
                 commande.CommandText = "INSERT INTO USERS (login, hash) VALUES ('user', 'f71dbe52628a3f83a77ab494817525c6')"; // SECU (A02:2021-Cryptographic Failures) : donnée sensible pas assez obfusquée (MD5 de toto) et présente dans le code, donc dans le GitHub visible de tous
+                /*OGZ
+                A02:2021-Défaillances cryptographiques 
+                MD5 n'est donc plus considéré comme sûr au sens cryptographique.
+                Utiliser plutot des algorithmes tels que SHA-256
+                */
                 commande.ExecuteNonQuery();
             }
 
             string ChaineConnexion = Configuration.GetConnectionString("DefaultConnection"); // SECU (A04:2021-Insecure Design) : la chaîne de connexion devrait utiliser la sécurité intégrée et pas afficher le mot de passe en clair
+            /*OGZ
+            A04: 2021 - Conception non sécurisée
+            Evite de voir passer des mots de passe légers
+            Avec la sécurité intégrée, les mots de passe sont confiés à l'Administration Système
+            */
             if (ChaineConnexion.Contains("password")) throw new ApplicationException(); // SECU (A05:2021-Security Misconfiguration) : cette tentative de sécurité est mal faite car elle ne prend pas en compte la casse, et est donc inefficace ; de plus, elle agit sur un symptome plutôt que sur la cause, ce qui n'est pas une bonne pratique
+            /*OGZ
+            A05:2021-Mauvaise configuration de sécurité 
+            La chaîne de connexion devrait utiliser la sécurité intégrée
+            */
 
             if (env.IsDevelopment())
             {
@@ -87,6 +101,10 @@ namespace BadSecApp.Server
             app.UseStaticFiles();
 
             // SECU (A04:2021-Insecure Design) : inactif par défaut, toute augmentation de la surface d'attaque peut poser problème (ainsi que pour la montée en charge, dans ce cas précis, à cause des affinités de sessions)
+            /*OGZ
+            A04:2021-Conception non sécurisée 
+            ?????
+            */
             app.UseSession();
 
             app.UseRouting();
