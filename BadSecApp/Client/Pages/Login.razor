@@ -6,10 +6,10 @@
 <div>
     <EditForm OnSubmit="Creer" Model="ProposedCredentials">
         <div>
-            Login : <input type="text" @bind-value="@ProposedCredentials.login" />
+            Login : <input type="text" @bind-value="@ProposedCredentials.login" autocomplete="off" />@*A07 Identification and Authentication Failures*@
         </div>
         <div>
-            Mot de passe : <input type="password" @bind-value="@ProposedCredentials.pwd" />
+            Mot de passe : <input type="password" @bind-value="@ProposedCredentials.pwd" autocomplete="off" />@*A07 Identification and Authentication Failures*@
         </div>
         <button type="submit" class="btn btn-primary">Connecter</button>
     </EditForm>

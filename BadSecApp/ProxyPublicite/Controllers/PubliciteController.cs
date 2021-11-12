@@ -37,6 +37,8 @@ namespace ProxyPublicite.Controllers
         [HttpPost]
         public int Post()
         {
+            // A10:2021 – Server-Side Request Forgery (SSRF)
+            // Request.Body peut contenir une adresse malveillante. Whitelist d'url ?
             using (StreamReader reader = new StreamReader(Request.Body, Encoding.UTF8))
                 Publicites.Add(reader.ReadToEndAsync().Result);
             return Publicites.Count - 1;

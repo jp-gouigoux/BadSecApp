@@ -18,7 +18,7 @@
     private async Task IncrementCount()
     {
         currentCount++;
-        string path = configuration["RootPath"];
+        string path = configuration["RootPath"]; // A03 - Injection de type Path Traversal : Récupérer un chemin relatif plutôt qu'un chemin absolu. Paramètre à changer
         var reponse = await HttpClient.GetAsync($"api/Counter?valeur={currentCount}&path={path}");
     }
 
