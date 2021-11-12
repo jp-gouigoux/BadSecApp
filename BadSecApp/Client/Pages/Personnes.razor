@@ -43,7 +43,10 @@ else
     </table>
 }
 
-<p class="invisible" id="debug">@DebugMessage</p> <!-- SECU : ne jamais renvoyer des messages développeur pour aider ou alors, au pire, les mettre dans un #if DEBUG -->
+<!-- A09:2021 – Security Logging and Monitoring Failures -->
+<environment names="Development">
+    <p class="invisible" id="debug">@DebugMessage</p> <!-- SECU : ne jamais renvoyer des messages développeur pour aider ou alors, au pire, les mettre dans un #if DEBUG -->
+</environment>
 
 <h1>Ajouter une personne</h1>
 

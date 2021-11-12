@@ -26,31 +26,41 @@ namespace BadSecApp.Server.Controllers
         [HttpGet]
         public StatusCodeResult Login([FromQuery] string login, [FromQuery] string pwd)
         {
+            // A07:2021 – Identification and Authentication Failures : Permits default, weak, or well-known passwords
+
             if (login is null) throw new ArgumentException("login cannot be empty");
             if (pwd is null) pwd = string.Empty;
-            
-            bool isAuthenticated = true;
+
+            // A01 deny by default : Mettre false par défaut
+            bool isAuthenticated = false;
             try
             {
+                // A02 Cryptographic Failures : MD5 - deprecated hash function : using strong adaptive and salted hashing functions with a work factor (delay factor), such as Argon2, scrypt, bcrypt or PBKDF2.
                 var content = MD5.Create().ComputeHash(Encoding.UTF8.GetBytes(pwd));
                 StringBuilder sb = new StringBuilder();
                 foreach (byte b in content)
                     sb.Append(b.ToString("x2"));
                 string hash = sb.ToString().ToLower();
 
-                if (login == "admin" && hash != "84d961568a65073a3bcf0eb216b2a576")
-                    isAuthenticated = false;
-                else if (login != "admin")
+                // A02 Crypto keys checked into source code repositories : Admin devrait être aussi en base               
+                using (var conn = new SqliteConnection("Data Source=test.db"))
                 {
-                    using (var conn = new SqliteConnection("Data Source=test.db"))
+                    conn.Open();
+                    var commande = conn.CreateCommand();
+                    // A03:2021 – Injection SQL
+                    commande.CommandText = "SELECT hash FROM USERS WHERE login= @login";
+                    commande.Parameters.AddWithValue("login", login);
+
+                    if (commande.ExecuteScalar()?.ToString() != hash)
                     {
-                        conn.Open();
-                        var commande = conn.CreateCommand();
-                        commande.CommandText = "SELECT hash FROM USERS WHERE login='" + login + "'";
-                        if (commande.ExecuteScalar()?.ToString() != hash)
-                            isAuthenticated = false;
+                        isAuthenticated = false;
+                    }
+                    else
+                    {
+                        isAuthenticated = true;
                     }
                 }
+                
             }
             catch (Exception excep)
             {
@@ -59,6 +69,7 @@ namespace BadSecApp.Server.Controllers
 
             if (isAuthenticated)
             {
+                // A05:2021 – Security Misconfiguration : Sensitive Cookie in HTTPS Session Without 'Secure' Attribute.
                 HttpContext.Session.Set("USER", Encoding.UTF8.GetBytes(login));
                 return new OkResult();
             }

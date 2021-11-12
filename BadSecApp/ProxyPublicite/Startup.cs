@@ -24,7 +24,8 @@ namespace ProxyPublicite
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddCors();
+            // A05:2021 – Security Misconfiguration
+            //services.AddCors();
 
             services.AddControllers();
         }
@@ -39,9 +40,10 @@ namespace ProxyPublicite
 
             app.UseRouting();
 
-            app.UseCors(
-                options => options.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader().SetPreflightMaxAge(TimeSpan.FromSeconds(1000))
-            );
+            // A05:2021 – Security Misconfiguration
+            //app.UseCors(
+            //    options => options.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader().SetPreflightMaxAge(TimeSpan.FromSeconds(1000))
+            //);
 
             app.UseAuthorization();
 

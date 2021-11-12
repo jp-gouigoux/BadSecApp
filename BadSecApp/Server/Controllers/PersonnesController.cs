@@ -22,7 +22,11 @@ namespace BadSecApp.Server.Controllers
                 {
                     conn.Open();
                     var commande = conn.CreateCommand();
-                    commande.CommandText = "INSERT INTO PERSONNES (nom, prenom, age) VALUES ('" + personne.Nom + "', '" + personne.Prenom + "', " + personne.Age.ToString() + ")";
+                    // A03:2021 – Injection SQL
+                    commande.CommandText = "INSERT INTO PERSONNES (nom, prenom, age) VALUES (@Nom, @Prenom, @Age)";
+                    commande.Parameters.AddWithValue("Nom", personne.Nom);
+                    commande.Parameters.AddWithValue("Prenom", personne.Prenom);
+                    commande.Parameters.AddWithValue("Age", personne.Age);
                     commande.ExecuteNonQuery();
 
                     commande = conn.CreateCommand();
@@ -51,7 +55,9 @@ namespace BadSecApp.Server.Controllers
                 {
                     conn.Open();
                     var commande = conn.CreateCommand();
-                    commande.CommandText = "SELECT nom, prenom, age FROM PERSONNES WHERE nom LIKE '%" + IndicationNom + "%'";
+                    // A03:2021 – Injection SQL
+                    commande.CommandText = "SELECT nom, prenom, age FROM PERSONNES WHERE nom LIKE @IndicationNom";
+                    commande.Parameters.AddWithValue("@IndicationNom", $"%{IndicationNom}%");
 
                     using (var reader = commande.ExecuteReader())
                     {
@@ -70,7 +76,9 @@ namespace BadSecApp.Server.Controllers
                     foreach (Personne p in donnees)
                     {
                         commande = conn.CreateCommand();
-                        commande.CommandText = "SELECT url FROM PHOTOS WHERE nom='" + p.Nom + "'";
+                        // A03:2021 – Injection SQL
+                        commande.CommandText = "SELECT url FROM PHOTOS WHERE nom=@Nom";
+                        commande.Parameters.AddWithValue("@Nom", p.Nom);
                         var reader = commande.ExecuteReader();
                         reader.Read();
                         p.UrlPhoto = reader.GetString(0);
@@ -101,11 +109,13 @@ namespace BadSecApp.Server.Controllers
                 {
                     if (reader.Read())
                     {
+                        // A03:2021 – Injection Cross-site Scripting : Sanitize nom https://docs.microsoft.com/fr-fr/aspnet/core/security/cross-site-scripting
                         sb.Append("<h1>").Append(reader.GetString(0)).Append(" ").Append(nom).AppendLine("</h1>");
                         sb.Append("<p>Agé.e de ").Append(reader.GetInt32(1).ToString()).AppendLine(" ans</p>");
                     }
                     else
                     {
+                        // A03:2021 – Injection Cross-site Scripting : Sanitize nom https://docs.microsoft.com/fr-fr/aspnet/core/security/cross-site-scripting
                         sb.Append("<h1>").Append(nom).Append(" ne fait pas partie de notre annuaire !").AppendLine("</h1>");
                     }
                 }
