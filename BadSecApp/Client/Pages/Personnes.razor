@@ -36,14 +36,13 @@ else
                     <td>@personne.Nom</td>
                     <td>@personne.Prenom</td>
                     <td>@personne.Age.ToString()</td>
-                    <td><img src="@personne.UrlPhoto"/></td>
+                    <td><img src="@personne.UrlPhoto" /></td>
                 </tr>
             }
         </tbody>
     </table>
 }
 
-<p class="invisible" id="debug">@DebugMessage</p> <!-- SECU : ne jamais renvoyer des messages développeur pour aider ou alors, au pire, les mettre dans un #if DEBUG -->
 
 <h1>Ajouter une personne</h1>
 
@@ -59,8 +58,8 @@ else
             Age : <input type="text" @bind-value="@PersonneEnCreation.Age" />
         </div>
         <div>
-@*            Le bind protège de l'injection !
-*@            URL Photo : <input type="text" @bind-value="@PersonneEnCreation.UrlPhoto" />
+            @*            Le bind protège de l'injection !
+            *@            URL Photo : <input type="text" @bind-value="@PersonneEnCreation.UrlPhoto" />
         </div>
         <button type="submit" class="btn btn-primary">Créer nouvelle demande</button>
     </EditForm>
@@ -95,15 +94,10 @@ else
 
     private Personne[] personnes;
 
-    private string DebugMessage;
-
     private string filtre { get; set; } = string.Empty;
 
     void Navigate()
     {
-        //var query = new Dictionary<string, string> { { "indicationNom", filtre } };
-        //Nav.NavigateTo(QueryHelpers.AddQueryString(Nav.Uri, query)); (ne navigue que dans l'URL locale, bref dans l'history, mais ne recharge pas la page)
-
         // Juste pour faire voir le force reload ; normalement, on changerait plutôt les données par un appel d'API réalisé par le client WASM
         Nav.NavigateTo("/personnes?indicationNom=" + HttpUtility.UrlEncode(filtre), forceLoad: true); // SECU (A03:2021-Injection) : rend plus simple l'injection, car elle peut être réalisée directement depuis le client et le paramètre est visible
     }
@@ -146,9 +140,7 @@ else
             indicationNom = valeurs[0];
 
         string filtre = indicationNom is null ? string.Empty : "?IndicationNom=" + indicationNom;
-        var resultat = await Http.GetFromJsonAsync<Tuple<Personne[], string>>("api/Personnes" + filtre);
-        personnes = resultat.Item1.ToArray();
-        DebugMessage = resultat.Item2;
+        personnes = await Http.GetFromJsonAsync<Personne[]>("api/Personnes" + filtre);
         this.StateHasChanged();
     }
 

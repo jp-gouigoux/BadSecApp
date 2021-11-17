@@ -1,14 +1,9 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using ProxyPublicite.Controllers;
 
 namespace ProxyPublicite
 {
@@ -24,9 +19,13 @@ namespace ProxyPublicite
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddCors();
+            services.AddCors(options =>
+                options.AddDefaultPolicy(builder =>
+                    builder.WithOrigins("http://localhost:5000")
+                           .WithOrigins("http://localhost:60021")));
 
             services.AddControllers();
+            services.AddHttpClient<PubliciteController>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -40,11 +39,13 @@ namespace ProxyPublicite
             app.UseRouting();
 
             // SECU (A05:2021-Security Misconfiguration) : Pas une bonne pratique d'ouvrir le CORS pour n'importe quelle origine ; il faut être le plus restrictif possible (moindre privilège)
-            app.UseCors(
-                options => options.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader().SetPreflightMaxAge(TimeSpan.FromSeconds(1000))
-            );
+            //app.UseCors(
+            //    options => options.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader().SetPreflightMaxAge(TimeSpan.FromSeconds(1000))
+            //);
 
-            app.UseAuthorization();
+            app.UseCors();
+
+            // app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
             {

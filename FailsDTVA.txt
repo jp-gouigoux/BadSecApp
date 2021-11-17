@@ -1,0 +1,9 @@
+PROJECT : DVTA
+
+Probleme posible injection depuis les parametres
+DBAccess.cs line: 80 	String sqlcmd = "SELECT * FROM users where username='"+username+"' and password='"+password+"'";
+DBAccess.cs line: 153  SqlCommand objCommand = new SqlCommand("select item, price, date,time from expenses where email='"+emailid+"'", conn);
+DBAccess.cs line: 184 String sqlcmd = "DELETE FROM expenses where email='" + emailid + "'";
+
+Registre d'infos sur le fichier appsetings, possible vol du fichier
+Login.cs line : 172    var entry1 = config.AppSettings.Settings["DBSERVER"];

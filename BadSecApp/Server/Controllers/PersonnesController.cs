@@ -3,9 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.Sqlite;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
+using System.Web;
 
 namespace BadSecApp.Server.Controllers
 {
@@ -16,23 +15,23 @@ namespace BadSecApp.Server.Controllers
         [HttpPost]
         public IActionResult CreationPersonne([FromBody] Personne personne)
         {
+            if (!Uri.IsWellFormedUriString(personne.UrlPhoto, UriKind.Absolute))
+            {
+                return BadRequest("Url photo invalide");
+            }
+
             try
             {
                 using (var conn = new SqliteConnection("Data Source=test.db"))
                 {
                     conn.Open();
                     var commande = conn.CreateCommand();
-                    commande.CommandText = "INSERT INTO PERSONNES (nom, prenom, age) VALUES ('" + personne.Nom + "', '" + personne.Prenom + "', " + personne.Age.ToString() + ")"; // SECU (A03:2021-Injection) : Faille d'injection SQL ; à partir du moment où on génère avec du texte des instructions ou des codes ou scripts ou n'importe quoi qui sera interprété par ordinateur, on a intérêt à maitriser fortement ce qui est construit
-
-                    // SECU : Une sécurisation simple et efficace serait la suivante
-                    //commande.CommandText = "INSERT INTO PERSONNES (nom, prenom, age) VALUES (@pNom, @pPrenom, @pAge)";
-                    //commande.Parameters.Add(new SqliteParameter("pNom", personne.Nom));
-                    //commande.Parameters.Add(new SqliteParameter("pPrenom", personne.Prenom));
-                    //commande.Parameters.Add(new SqliteParameter("pAge", personne.Age.ToString()));
-
+                    commande.CommandText = "INSERT INTO PERSONNES (nom, prenom, age) VALUES (@pNom, @pPrenom, @pAge)";
+                    commande.Parameters.Add(new SqliteParameter("pNom", personne.Nom));
+                    commande.Parameters.Add(new SqliteParameter("pPrenom", personne.Prenom));
+                    commande.Parameters.Add(new SqliteParameter("pAge", personne.Age.ToString()));
                     commande.ExecuteNonQuery();
 
-                    // SECU : On croit bien faire en mettant des SqlParameters, mais ça empêche de planter dès la tentative d'envoi de données pour XSS !
                     commande = conn.CreateCommand();
                     commande.CommandText = "INSERT INTO PHOTOS (nom, url) VALUES (@nom, @url)";
                     commande.Parameters.Add(new SqliteParameter("nom", personne.Nom));
@@ -48,55 +47,48 @@ namespace BadSecApp.Server.Controllers
         }
 
         [HttpGet]
-        public Tuple<List<Personne>, string> GetAll([FromQuery] string IndicationNom)
+        public IActionResult GetAll([FromQuery] string IndicationNom)
         {
             var donnees = new List<Personne>();
-            string erreur = string.Empty;
 
-            try
+            // Décommenter la ligne suivante pour simuler une erreur
+            //throw new Exception("doit s'afficher dans la page des exceptions en mode developer");
+
+            using (var conn = new SqliteConnection("Data Source=test.db"))
             {
-                using (var conn = new SqliteConnection("Data Source=test.db"))
+                conn.Open();
+                var commande = conn.CreateCommand();
+
+                commande.CommandText = "SELECT nom, prenom, age FROM PERSONNES WHERE nom LIKE @chaine";
+                commande.Parameters.Add(new SqliteParameter("chaine", $"%{IndicationNom}%"));
+
+                using (var reader = commande.ExecuteReader())
                 {
-                    conn.Open();
-                    var commande = conn.CreateCommand();
-                    commande.CommandText = "SELECT nom, prenom, age FROM PERSONNES WHERE nom LIKE '%" + IndicationNom + "%'";
-
-                    // SECU (A03:2021-Injection) : Rien de tout ceci ne serait arrivé si le code ci-dessous avait remplacé la ligne précédente
-                    //commande.CommandText = "SELECT nom, prenom, age FROM PERSONNES WHERE nom LIKE @chaine";
-                    //commande.Parameters.Add(new SqliteParameter("chaine", textBox3.Text + "%"));
-
-                    using (var reader = commande.ExecuteReader())
+                    while (reader.Read())
                     {
-                        while (reader.Read())
-                        {
-                            donnees.Add(
-                                new Personne()
-                                {
-                                    Nom = reader.GetString(0),
-                                    Prenom = reader.GetString(1),
-                                    Age = reader.GetInt32(2)
-                                });
-                        }
-                    }
-
-                    // SECU : au moins, ici, la donnée qu'on met dans la requête vient du code, donc pas d'injection possible, n'est-ce pas ? Mais il y a peut-être un autre problème, qui peut affecter rapidement la sécurité de l'application...
-                    foreach (Personne p in donnees)
-                    {
-                        commande = conn.CreateCommand();
-                        commande.CommandText = "SELECT url FROM PHOTOS WHERE nom='" + p.Nom + "'";
-                        var reader = commande.ExecuteReader();
-                        reader.Read();
-                        p.UrlPhoto = reader.GetString(0);
+                        donnees.Add(
+                            new Personne()
+                            {
+                                Nom = reader.GetString(0),
+                                Prenom = reader.GetString(1),
+                                Age = reader.GetInt32(2)
+                            });
                     }
                 }
+
+                foreach (Personne p in donnees)
+                {
+                    commande = conn.CreateCommand();
+                    commande.CommandText = "SELECT url FROM PHOTOS WHERE nom='" + p.Nom + "'";
+                    var reader = commande.ExecuteReader();
+                    reader.Read();
+                    p.UrlPhoto = HttpUtility.UrlEncode(reader.GetString(0));
+                }
             }
-            catch (Exception ex)
-            {
-                erreur = ex.ToString();
-            }
-            return new Tuple<List<Personne>, string>(donnees, erreur);
+
+            return Ok(donnees);
         }
-        
+
         [HttpGet("fiche")]
         public ContentResult GenererFiche([FromQuery] string nom)
         {
