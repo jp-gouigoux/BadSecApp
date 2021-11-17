@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace ProxyPublicite.Controllers
 {
@@ -12,8 +11,9 @@ namespace ProxyPublicite.Controllers
     public class PubliciteController : ControllerBase
     {
         private static List<string> Publicites = null;
+        private readonly HttpClient httpClient;
 
-        public PubliciteController()
+        public PubliciteController(HttpClient httpClient)
         {
             if (Publicites == null)
             {
@@ -22,17 +22,24 @@ namespace ProxyPublicite.Controllers
                 for (int i = 1; i <= 3; i++)
                     Publicites.Add("http://gouigoux.com/pubs/pub" + i + ".html");
             }
+
+            this.httpClient = httpClient;
         }
 
         [HttpGet]
         public string Get([FromQuery] int page = 0)
         {
             // SECU (A04:2021-Insecure Design) : il faut injecter le client plutôt que le recréer à chaque fois, sinon risque de facilitation de DDOS (ressource lourde à créer)
-            HttpClient client = new HttpClient();
+
+            // HttpClient doit être instancié une seule fois et réutilisé tout au long de la vie de l'applicaiton,
+            // autrement les sockets système saturent.
+            // Voir https://docs.microsoft.com/fr-fr/dotnet/api/system.net.http.httpclient?view=net-5.0
+            //HttpClient client = new HttpClient();
+
             if (page < 0 || page >= Publicites.Count)
                 return "<p>Pas de publicité pour cette fois !</p>";
 
-            return client.GetStringAsync(Publicites[page]).Result;
+            return httpClient.GetStringAsync(Publicites[page]).Result;
         }
 
         [HttpPost]
