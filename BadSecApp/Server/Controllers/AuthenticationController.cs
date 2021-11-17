@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using BadSecApp.Shared;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.Logging;
 using System;
@@ -19,33 +20,32 @@ namespace BadSecApp.Server.Controllers
             _logger = logger;
         }
 
-        [HttpGet]
-        public StatusCodeResult Login([FromQuery] string login, [FromQuery] string pwd)
+        [HttpPost]
+        public StatusCodeResult Login([FromBody] Credentials credentials)
         {
-            if (login is null) throw new ArgumentException("login cannot be empty");
-            if (pwd is null) pwd = string.Empty;
+            if (credentials is null) throw new ArgumentException("login cannot be empty");
 
             bool isAuthenticated = false;
 
             try
             {
-                var content = MD5.Create().ComputeHash(Encoding.UTF8.GetBytes(pwd));
+                var content = MD5.Create().ComputeHash(Encoding.UTF8.GetBytes(credentials.pwd));
                 StringBuilder sb = new StringBuilder();
                 foreach (byte b in content)
                     sb.Append(b.ToString("x2"));
                 string hash = sb.ToString().ToLower();
 
-                if (login == "admin" && hash == "84d961568a65073a3bcf0eb216b2a576") // On pourrait utiliser SHA512
+                if (credentials.login == "admin" && hash == "84d961568a65073a3bcf0eb216b2a576") // On pourrait utiliser SHA512
                 {
                     isAuthenticated = true;
                 }
-                else if (login != "admin")
+                else if (credentials.login != "admin")
                 {
                     using (var conn = new SqliteConnection("Data Source=test.db"))
                     {
                         conn.Open();
                         var commande = conn.CreateCommand();
-                        commande.CommandText = "SELECT hash FROM USERS WHERE login='" + login + "'";
+                        commande.CommandText = "SELECT hash FROM USERS WHERE login='" + credentials.login + "'";
                         if (commande.ExecuteScalar()?.ToString() == hash)
                         {
                             isAuthenticated = true;
@@ -60,12 +60,12 @@ namespace BadSecApp.Server.Controllers
 
             if (isAuthenticated)
             {
-                HttpContext.Session.Set("USER", Encoding.UTF8.GetBytes(login));
+                HttpContext.Session.Set("USER", Encoding.UTF8.GetBytes(credentials.login));
                 return new OkResult();
             }
             else
             {
-                _logger.LogError("Echec d'authentification de l'utilisateur " + login);
+                _logger.LogError("Echec d'authentification de l'utilisateur " + credentials.login);
                 return new UnauthorizedResult();
             }
         }
