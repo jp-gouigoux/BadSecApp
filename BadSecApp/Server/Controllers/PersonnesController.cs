@@ -51,6 +51,9 @@ namespace BadSecApp.Server.Controllers
         {
             var donnees = new List<Personne>();
 
+            // Décommenter la ligne suivante pour simuler une erreur
+            //throw new Exception("doit s'afficher dans la page des exceptions en mode developer");
+
             using (var conn = new SqliteConnection("Data Source=test.db"))
             {
                 conn.Open();

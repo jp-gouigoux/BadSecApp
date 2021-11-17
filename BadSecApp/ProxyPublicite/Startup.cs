@@ -20,7 +20,9 @@ namespace ProxyPublicite
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddCors(options =>
-                options.AddDefaultPolicy(builder => builder.WithOrigins("http://localhost:5000")));
+                options.AddDefaultPolicy(builder =>
+                    builder.WithOrigins("http://localhost:5000")
+                           .WithOrigins("http://localhost:60021")));
 
             services.AddControllers();
             services.AddHttpClient<PubliciteController>();
