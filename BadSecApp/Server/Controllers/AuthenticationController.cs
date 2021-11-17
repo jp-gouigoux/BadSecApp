@@ -2,12 +2,8 @@
 using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.Logging;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
-using System.Text.Unicode;
-using System.Threading.Tasks;
 using System.Xml;
 
 namespace BadSecApp.Server.Controllers
@@ -28,8 +24,9 @@ namespace BadSecApp.Server.Controllers
         {
             if (login is null) throw new ArgumentException("login cannot be empty");
             if (pwd is null) pwd = string.Empty;
-            
-            bool isAuthenticated = true; // SECU (A01:2021-Broken Access Control) : on doit travailler en failsafe, le booléen devrait être initialisé à false et passé à true que si la preuve d'authentification est réalisée
+
+            bool isAuthenticated = false;
+
             try
             {
                 var content = MD5.Create().ComputeHash(Encoding.UTF8.GetBytes(pwd));
@@ -38,8 +35,10 @@ namespace BadSecApp.Server.Controllers
                     sb.Append(b.ToString("x2"));
                 string hash = sb.ToString().ToLower();
 
-                if (login == "admin" && hash != "84d961568a65073a3bcf0eb216b2a576") // SECU (A02:2021-Cryptographic Failures) : facile à trouver que c'est le hash de superman et MD5 est obsolète
-                    isAuthenticated = false;
+                if (login == "admin" && hash == "84d961568a65073a3bcf0eb216b2a576") // On pourrait utiliser SHA512
+                {
+                    isAuthenticated = true;
+                }
                 else if (login != "admin")
                 {
                     using (var conn = new SqliteConnection("Data Source=test.db"))
@@ -47,14 +46,16 @@ namespace BadSecApp.Server.Controllers
                         conn.Open();
                         var commande = conn.CreateCommand();
                         commande.CommandText = "SELECT hash FROM USERS WHERE login='" + login + "'";
-                        if (commande.ExecuteScalar()?.ToString() != hash) // SECU (A01:2021-Broken Access Control) : si on génère une exception en injectant un login avec une apostrophe, par exemple, alors on passe en exception et on considère qu'on est authentifié
-                            isAuthenticated = false;
+                        if (commande.ExecuteScalar()?.ToString() == hash)
+                        {
+                            isAuthenticated = true;
+                        }
                     }
                 }
             }
-            catch (Exception excep)
+            catch (Exception ex)
             {
-                _logger.LogDebug(excep.ToString());
+                _logger.LogDebug(ex.ToString());
             }
 
             if (isAuthenticated)
@@ -64,7 +65,7 @@ namespace BadSecApp.Server.Controllers
             }
             else
             {
-                // SECU (A09:2021-Security Logging and Monitoring Failures) : il faut loguer aussi et même surtout les erreurs d'authentification
+                _logger.LogError("Echec d'authentification de l'utilisateur " + login);
                 return new UnauthorizedResult();
             }
         }
