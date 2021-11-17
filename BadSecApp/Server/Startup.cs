@@ -1,12 +1,9 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using System;
-using System.Linq;
 
 namespace BadSecApp.Server
 {
@@ -69,9 +66,6 @@ namespace BadSecApp.Server
                 commande.CommandText = "INSERT INTO USERS (login, hash) VALUES ('user', 'f71dbe52628a3f83a77ab494817525c6')"; // SECU (A02:2021-Cryptographic Failures) : donnée sensible pas assez obfusquée (MD5 de toto) et présente dans le code, donc dans le GitHub visible de tous
                 commande.ExecuteNonQuery();
             }
-
-            string ChaineConnexion = Configuration.GetConnectionString("DefaultConnection"); // SECU (A04:2021-Insecure Design) : la chaîne de connexion devrait utiliser la sécurité intégrée et pas afficher le mot de passe en clair
-            if (ChaineConnexion.Contains("password")) throw new ApplicationException(); // SECU (A05:2021-Security Misconfiguration) : cette tentative de sécurité est mal faite car elle ne prend pas en compte la casse, et est donc inefficace ; de plus, elle agit sur un symptome plutôt que sur la cause, ce qui n'est pas une bonne pratique
 
             if (env.IsDevelopment())
             {
