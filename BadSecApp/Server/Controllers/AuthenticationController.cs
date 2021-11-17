@@ -70,10 +70,12 @@ namespace BadSecApp.Server.Controllers
             }
         }
 
+
+        // On devrait changer la méthode pour POST et annoter avec [RequestSizeLimit]
         [HttpGet("validate")]
         public StatusCodeResult ValidateUsersList(string xmlContent)
         {
-            // SECU (A08:2021-Software and Data Integrity Failures) : potentielle attaque par XML bombing, si on laisse du contenu entrer tel quel et qu'on ne met pas de validation ou de limite sur les ressources (mais pas facile à blinder)
+            // Il faudrait valider le XML contre un XSD, limiter la taille de la chaîne aussi. Ou tout simplement passer sur du JSON.
             XmlDocument dom = new XmlDocument();
             dom.LoadXml(xmlContent);
             if (dom.SelectNodes("//users").Count > 0)
