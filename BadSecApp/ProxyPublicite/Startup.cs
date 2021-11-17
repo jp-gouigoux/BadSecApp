@@ -4,7 +4,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using ProxyPublicite.Controllers;
-using System;
 
 namespace ProxyPublicite
 {
@@ -20,7 +19,8 @@ namespace ProxyPublicite
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddCors();
+            services.AddCors(options =>
+                options.AddDefaultPolicy(builder => builder.WithOrigins("http://localhost:5000")));
 
             services.AddControllers();
             services.AddHttpClient<PubliciteController>();
@@ -37,11 +37,13 @@ namespace ProxyPublicite
             app.UseRouting();
 
             // SECU (A05:2021-Security Misconfiguration) : Pas une bonne pratique d'ouvrir le CORS pour n'importe quelle origine ; il faut être le plus restrictif possible (moindre privilège)
-            app.UseCors(
-                options => options.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader().SetPreflightMaxAge(TimeSpan.FromSeconds(1000))
-            );
+            //app.UseCors(
+            //    options => options.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader().SetPreflightMaxAge(TimeSpan.FromSeconds(1000))
+            //);
 
-            app.UseAuthorization();
+            app.UseCors();
+
+            // app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
             {
