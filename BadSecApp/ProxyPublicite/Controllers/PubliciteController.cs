@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
 using System.Text;
+using System.Threading.Tasks;
+using System.Web;
 
 namespace ProxyPublicite.Controllers
 {
@@ -42,13 +44,26 @@ namespace ProxyPublicite.Controllers
             return httpClient.GetStringAsync(Publicites[page]).Result;
         }
 
+        // Devrait être protégé par [Authorize] pour rôle administrateur.
         [HttpPost]
-        public int Post()
+        public async Task<int> Post()
         {
             // SECU (A10:2021-Server-Side Request Forgery) : Cette API permet d'injecter des URLs quelconques qui seront lues comme des publicités, et elle est facile à trouver, même sans Swagger
             using (StreamReader reader = new StreamReader(Request.Body, Encoding.UTF8))
-                Publicites.Add(reader.ReadToEndAsync().Result);
+            {
+                var url = HttpUtility.UrlDecode(await reader.ReadToEndAsync());
+                if (ValidateUrl(url))
+                {
+                    Publicites.Add(url);
+                }
+            }
+
             return Publicites.Count - 1;
+        }
+
+        private bool ValidateUrl(string url)
+        {
+            return url.StartsWith("http://gouigoux.com/pubs/pub");
         }
     }
 }
