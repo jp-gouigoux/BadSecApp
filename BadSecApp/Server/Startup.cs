@@ -69,6 +69,8 @@ namespace BadSecApp.Server
                 commande.ExecuteNonQuery();
             }
 
+            // [ACE/LNU] A04: 2021 - Insecure Design:
+            // Le champs password ne devrait pas être testé en clair et pas de cette manière.
             string ChaineConnexion = Configuration.GetConnectionString("DefaultConnection");
             if (ChaineConnexion.Contains("password")) throw new ApplicationException();
 
@@ -85,6 +87,7 @@ namespace BadSecApp.Server
             app.UseBlazorFrameworkFiles();
             app.UseStaticFiles();
 
+            // [ACE/LNU] On dirait qu'aucune réelle session n'est utilisée mais peut-être lié à un comportement Blazor...
             app.UseSession();
 
             app.UseRouting();

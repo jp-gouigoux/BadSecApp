@@ -22,6 +22,7 @@ namespace BadSecApp.Server.Controllers
                 {
                     conn.Open();
                     var commande = conn.CreateCommand();
+                    // [ACE/LNU] A03:2021-Injection: si on ne contrôle pas le contenu des champs certes passés par Paramètres SQL...
                     commande.CommandText = "INSERT INTO PERSONNES (nom, prenom, age) VALUES ('" + personne.Nom + "', '" + personne.Prenom + "', " + personne.Age.ToString() + ")";
                     commande.ExecuteNonQuery();
 
@@ -99,6 +100,7 @@ namespace BadSecApp.Server.Controllers
                 commande.Parameters.Add(new SqliteParameter("nom", nom));
                 using (var reader = commande.ExecuteReader())
                 {
+                    // [ACE/LNU] A03:2021-Injection: scripts malveillant injectables ici... 
                     if (reader.Read())
                     {
                         sb.Append("<h1>").Append(reader.GetString(0)).Append(" ").Append(nom).AppendLine("</h1>");
@@ -115,7 +117,9 @@ namespace BadSecApp.Server.Controllers
                 commande.Parameters.Add(new SqliteParameter("nom", nom));
                 using (var reader = commande.ExecuteReader())
                 {
-                    if (reader.Read())
+                      // [ACE/LNU] A03:2021-Injection:
+                      // Injection d'une url avec du code malicieux
+                      if (reader.Read())
                         sb.Append("<img src=\"").Append(reader.GetString(0)).AppendLine("\"/>");
                 }
             }

@@ -19,6 +19,10 @@
     {
         currentCount++;
         string path = configuration["RootPath"];
+
+        // [ACE/LNU] A01:2021-Broken Access Control:
+        // [ACE/LNU] les répertoires par défaut C:\apps\data\1,2...x sont supprimés et on peut mettre tout chemin du disque...
+
         var reponse = await HttpClient.GetAsync($"api/Counter?valeur={currentCount}&path={path}");
     }
 
@@ -32,6 +36,8 @@
         {
             if (int.TryParse(name, out var numPub))
             {
+                // [ACE/LNU] A03:2021-Injection:
+                // [ACE/LNU] Possibilité de choisir le numéro d'url malveillante précédemment enregistrée
                 string URLProxyPublicite = configuration["ServeurPublicite"] + "?page=" + numPub;
                 Console.Write("Publicite : " + URLProxyPublicite);
                 myMarkup = await HttpClient.GetStringAsync(URLProxyPublicite);

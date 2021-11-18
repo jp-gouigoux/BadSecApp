@@ -21,6 +21,9 @@ namespace BadSecApp.Client.Pages
 
         protected async void Creer()
         {
+            // [ACE/LNU] A03:2021-Injection:
+            // [ACE/LNU] Cross-Site Scripting - Pas de sanitisation en entrée sur le login, injection de script possible      
+
             HttpResponseMessage retour = await http.GetAsync("api/Authentication?login=" + ProposedCredentials.login + "&pwd=" + ProposedCredentials.pwd);
             resultat = retour.IsSuccessStatusCode ? "Vous êtes connecté en tant que " + ProposedCredentials.login : "Authentification incorrecte";
             this.StateHasChanged();
