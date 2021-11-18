@@ -16,7 +16,11 @@ namespace BadSecApp.Server.Controllers
     [Route("api/[controller]")]
     public class AuthenticationController : Controller
     {
-        private readonly ILogger<AuthenticationController> _logger;
+    // [ACE/LNU] A07:2021-Identification and Authentication Failures | A02:2021-Cryptographic Failures:
+    // [ACE/LNU] Problème classique de Basic authentication over http, il est possible d'intercepter le login/pwd de la query (vu avec Fiddler)
+    // [ACE/LNU] De plus, le password est en clair...
+
+    private readonly ILogger<AuthenticationController> _logger;
 
         public AuthenticationController(ILogger<AuthenticationController> logger)
         {
@@ -28,7 +32,10 @@ namespace BadSecApp.Server.Controllers
         {
             if (login is null) throw new ArgumentException("login cannot be empty");
             if (pwd is null) pwd = string.Empty;
-            
+
+            // [ACE/LNU] A04:2021-Insecure Design ou A08:2021-Software and Data Integrity Failures:
+            // [ACE/LNU] Avec une initialisation à TRUE pour isAuthenticated, il suffit de faire crasher le bloc try ci-après pour être authentifié
+            // [ACE/LNU] Faire crasher l'ordre par injection par exemple en fermant la chaîne + ajout de n'importe quelle clause...
             bool isAuthenticated = true;
             try
             {
@@ -38,6 +45,8 @@ namespace BadSecApp.Server.Controllers
                     sb.Append(b.ToString("x2"));
                 string hash = sb.ToString().ToLower();
 
+                // [ACE/LNU] A06:2021-Vulnerable and Outdated Components:
+                // [ACE/LNU] Encryptage MD5 accessible par toute appli de déchiffrement, ici Hash correspond à 'superman', potentiellement attaquable par force bruce
                 if (login == "admin" && hash != "84d961568a65073a3bcf0eb216b2a576")
                     isAuthenticated = false;
                 else if (login != "admin")
@@ -46,6 +55,9 @@ namespace BadSecApp.Server.Controllers
                     {
                         conn.Open();
                         var commande = conn.CreateCommand();
+
+                        // [ACE/LNU] A03:2021-Injection:
+                        // [ACE/LNU] Pas de sanitisation en entrée sur le login, injection SQL possible
                         commande.CommandText = "SELECT hash FROM USERS WHERE login='" + login + "'";
                         if (commande.ExecuteScalar()?.ToString() != hash)
                             isAuthenticated = false;
@@ -54,6 +66,8 @@ namespace BadSecApp.Server.Controllers
             }
             catch (Exception excep)
             {
+                // [ACE/LNU] A09: 2021 - Security Logging and Monitoring Failures:
+                // [ACE/LNU] Niveau de traces pas suffisant pour tracer les attaques, il faudrait afficher le login/password donnés par le hacker
                 _logger.LogDebug(excep.ToString());
             }
 
