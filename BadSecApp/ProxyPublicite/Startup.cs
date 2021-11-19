@@ -43,7 +43,7 @@ namespace ProxyPublicite
 
             // SECU (A05:2021-Security Misconfiguration) : Pas une bonne pratique d'ouvrir le CORS pour n'importe quelle origine ; il faut être le plus restrictif possible (moindre privilège)
             app.UseCors(
-                options => options.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader().SetPreflightMaxAge(TimeSpan.FromSeconds(1000))
+                options => options.WithOrigins(new string[] { "http://localhost:5000" }).AllowAnyMethod().AllowAnyHeader().SetPreflightMaxAge(TimeSpan.FromSeconds(1000))
             );
 
             app.UseAuthorization();
