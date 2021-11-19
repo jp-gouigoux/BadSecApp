@@ -27,6 +27,9 @@ namespace BadSecApp.Client.Pages
             // (y compris si préfixé par /api) et qui renvoie OK. Or, comme on se base juste sur le status code
             // pour dire que c'est authentifié et pas sur un retour d'un token à repasser derrière, on est accepté
             // dans tous les cas !!! 
+
+            // Corrigé dans le checkin précédant
+
             resultat = retour.IsSuccessStatusCode ? "Vous êtes connecté en tant que " + ProposedCredentials.login : "Authentification incorrecte";
             this.StateHasChanged();
 
