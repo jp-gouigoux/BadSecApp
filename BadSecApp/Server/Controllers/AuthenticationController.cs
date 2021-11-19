@@ -38,7 +38,7 @@ namespace BadSecApp.Server.Controllers
                 StringBuilder sb = new StringBuilder();
                 foreach (byte b in content)
                     sb.Append(b.ToString("x2"));
-                string hash = sb.ToString().ToLower();
+                string hash = sb.ToString().ToUpper();
 
                 if (login == "admin" && hash == "73CD1B16C4FB83061AD18A0B29B9643A68D4640075A466DC9E51682F84A847F5") // SECU (A02:2021-Cryptographic Failures) : facile à trouver que c'est le hash de superman et MD5 est obsolète
                     isAuthenticated = true;
