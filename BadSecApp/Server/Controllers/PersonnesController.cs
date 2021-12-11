@@ -51,7 +51,7 @@ namespace BadSecApp.Server.Controllers
             {
                 conn.Open();
                 var commande = conn.CreateCommand();
-                commande.CommandText = "SELECT nom, prenom, age FROM PERSONNES WHERE nom LIKE @chaine";
+                commande.CommandText = "SELECT p.nom nom, p.prenom prenom, p.age age, h.url url FROM PERSONNES p INNER JOIN PHOTOS h ON p.nom = h.nom WHERE p.nom LIKE @chaine";
                 commande.Parameters.Add(new SqliteParameter("chaine", IndicationNom + "%"));
 
                 using (var reader = commande.ExecuteReader())
@@ -63,19 +63,10 @@ namespace BadSecApp.Server.Controllers
                             {
                                 Nom = reader.GetString(0),
                                 Prenom = reader.GetString(1),
-                                Age = reader.GetInt32(2)
+                                Age = reader.GetInt32(2),
+                                UrlPhoto = reader.GetString(3)
                             });
                     }
-                }
-
-                // SECU : au moins, ici, la donnée qu'on met dans la requête vient du code, donc pas d'injection possible, n'est-ce pas ? Mais il y a peut-être un autre problème, qui peut affecter rapidement la sécurité de l'application...
-                foreach (Personne p in donnees)
-                {
-                    commande = conn.CreateCommand();
-                    commande.CommandText = "SELECT url FROM PHOTOS WHERE nom='" + p.Nom + "'";
-                    var reader = commande.ExecuteReader();
-                    reader.Read();
-                    p.UrlPhoto = reader.GetString(0);
                 }
             }
             return donnees;
