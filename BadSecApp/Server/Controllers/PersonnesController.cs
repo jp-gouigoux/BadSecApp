@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Web;
 
 namespace BadSecApp.Server.Controllers
 {
@@ -94,9 +95,7 @@ namespace BadSecApp.Server.Controllers
                     }
                     else
                     {
-                        // SECU (A03:2021-Injection) : faille de Cross Site Scripting non rémanente, c'est-à-dire qu'elle nécessite que quelqu'un lance l'URL "forgée", désormais intégrée dans la même catégorie que les injections SQL et autres attaques par évitement de la forme canonique ;
-                        // si on passe sur le paramètre nom une valeur bien choisie comme http://localhost:60021/api/Personnes/fiche?nom=Lagaffe%3C/h1%3E%3Cimg%20src=%22http://gouigoux.com/img/bouba.png%22%20onload=%22alert(%27owned!%27)%22/%3E%3Ch1%3E, on injecte du JavaScript qui s'exécute
-                        sb.Append("<h1>").Append(nom).Append(" ne fait pas partie de notre annuaire !").AppendLine("</h1>");
+                        sb.Append("<h1>").Append(HttpUtility.HtmlEncode(nom)).Append(" ne fait pas partie de notre annuaire !").AppendLine("</h1>");
                     }
                 }
 
