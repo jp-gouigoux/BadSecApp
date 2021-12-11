@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -12,10 +13,17 @@ namespace BadSecApp.Server.Controllers
     [Route("api/[controller]")]
     public class CounterController : Controller
     {
-        [HttpGet]
-        public IActionResult Envoyer(string valeur, string path)
+        private IConfiguration configuration;
+
+        private CounterController(IConfiguration config)
         {
-            // SECU (A03:2021-Injection) : Suppression du dossier en fonction des parametres - Risque de suppression d'un dossier non souhaité
+            configuration = config;
+        }
+
+        [HttpGet]
+        public IActionResult Envoyer(string valeur)
+        {
+            string path = configuration["RootPath"];
             string dossier = Path.Join(path, valeur);
 
             if (Directory.Exists(dossier))

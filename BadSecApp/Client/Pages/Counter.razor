@@ -18,13 +18,7 @@
     private async Task IncrementCount()
     {
         currentCount++;
-
-        // SECU (A05:2021 – Security Misconfiguration)
-        // Plusieurs informations sensibles sont stockées dans le fichier de configuration qui est retourné au client (il peut etre lu dans la partie réseau du navigateur)
-        // Une configuration contient un chemin d'accès complet => Full Path Disclosure
-        // Ce chemin est ensuite envoyé au serveur pour manipulation
-        string path = configuration["RootPath"];
-        var reponse = await HttpClient.GetAsync($"api/Counter?valeur={currentCount}&path={path}");
+        var reponse = await HttpClient.GetAsync($"api/Counter?valeur={currentCount}");
     }
 
     private string myMarkup = string.Empty;
