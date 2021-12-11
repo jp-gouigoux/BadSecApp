@@ -51,11 +51,8 @@ namespace BadSecApp.Server.Controllers
             {
                 conn.Open();
                 var commande = conn.CreateCommand();
-                commande.CommandText = "SELECT nom, prenom, age FROM PERSONNES WHERE nom LIKE '%" + IndicationNom + "%'";
-
-                // SECU (A03:2021-Injection) : Rien de tout ceci ne serait arrivé si le code ci-dessous avait remplacé la ligne précédente
-                //commande.CommandText = "SELECT nom, prenom, age FROM PERSONNES WHERE nom LIKE @chaine";
-                //commande.Parameters.Add(new SqliteParameter("chaine", textBox3.Text + "%"));
+                commande.CommandText = "SELECT nom, prenom, age FROM PERSONNES WHERE nom LIKE @chaine";
+                commande.Parameters.Add(new SqliteParameter("chaine", IndicationNom + "%"));
 
                 using (var reader = commande.ExecuteReader())
                 {
