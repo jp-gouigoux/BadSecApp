@@ -70,9 +70,6 @@ namespace BadSecApp.Server
                 commande.ExecuteNonQuery();
             }
 
-            string ChaineConnexion = Configuration.GetConnectionString("DefaultConnection"); // SECU (A04:2021-Insecure Design) : la chaîne de connexion devrait utiliser la sécurité intégrée et pas afficher le mot de passe en clair
-            if (ChaineConnexion.Contains("password")) throw new ApplicationException(); // SECU (A05:2021-Security Misconfiguration) : cette tentative de sécurité est mal faite car elle ne prend pas en compte la casse, et est donc inefficace ; de plus, elle agit sur un symptome plutôt que sur la cause, ce qui n'est pas une bonne pratique
-
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
