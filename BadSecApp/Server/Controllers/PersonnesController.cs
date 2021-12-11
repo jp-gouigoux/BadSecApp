@@ -22,14 +22,10 @@ namespace BadSecApp.Server.Controllers
                 {
                     conn.Open();
                     var commande = conn.CreateCommand();
-                    commande.CommandText = "INSERT INTO PERSONNES (nom, prenom, age) VALUES ('" + personne.Nom + "', '" + personne.Prenom + "', " + personne.Age.ToString() + ")"; // SECU (A03:2021-Injection) : Faille d'injection SQL ; à partir du moment où on génère avec du texte des instructions ou des codes ou scripts ou n'importe quoi qui sera interprété par ordinateur, on a intérêt à maitriser fortement ce qui est construit
-
-                    // SECU : Une sécurisation simple et efficace serait la suivante
-                    //commande.CommandText = "INSERT INTO PERSONNES (nom, prenom, age) VALUES (@pNom, @pPrenom, @pAge)";
-                    //commande.Parameters.Add(new SqliteParameter("pNom", personne.Nom));
-                    //commande.Parameters.Add(new SqliteParameter("pPrenom", personne.Prenom));
-                    //commande.Parameters.Add(new SqliteParameter("pAge", personne.Age.ToString()));
-
+                    commande.CommandText = "INSERT INTO PERSONNES (nom, prenom, age) VALUES (@pNom, @pPrenom, @pAge)";
+                    commande.Parameters.Add(new SqliteParameter("pNom", personne.Nom));
+                    commande.Parameters.Add(new SqliteParameter("pPrenom", personne.Prenom));
+                    commande.Parameters.Add(new SqliteParameter("pAge", personne.Age.ToString()));
                     commande.ExecuteNonQuery();
 
                     // SECU : On croit bien faire en mettant des SqlParameters, mais ça empêche de planter dès la tentative d'envoi de données pour XSS !
