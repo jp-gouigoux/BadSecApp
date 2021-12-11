@@ -105,7 +105,7 @@ namespace BadSecApp.Server.Controllers
                 using (var reader = commande.ExecuteReader())
                 {
                     if (reader.Read())
-                        sb.Append("<img src=\"").Append(reader.GetString(0)).AppendLine("\"/>"); // SECU (A03:2021-Injection) : faille de Cross Site Scripting rémanente, et qui peut donc impacter de nombreuses personnes si on envoie la valeur "http://gouigoux.com/img/bouba.png\" onload=\"alert('owned!')" dans la base de données
+                        sb.Append("<img src=\"").Append(HttpUtility.HtmlEncode(reader.GetString(0))).AppendLine("\"/>");
                 }
             }
 
