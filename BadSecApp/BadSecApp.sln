@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.30907.101
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31919.166
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BadSecApp.Server", "Server\BadSecApp.Server.csproj", "{B071698E-C142-4496-B9CF-61132F806B98}"
 EndProject
@@ -9,7 +9,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BadSecApp.Client", "Client\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BadSecApp.Shared", "Shared\BadSecApp.Shared.csproj", "{9D3A0E4E-1A38-49CF-A0C7-BE9ED770369C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProxyPublicite", "ProxyPublicite\ProxyPublicite.csproj", "{05CA9BB7-0E43-44C9-ADBE-5903DD2CB8B7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProxyPublicite", "ProxyPublicite\ProxyPublicite.csproj", "{05CA9BB7-0E43-44C9-ADBE-5903DD2CB8B7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

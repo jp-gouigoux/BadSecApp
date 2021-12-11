@@ -7,69 +7,76 @@
 
 <h1>Liste des personnes</h1>
 
-<p>Filtre : <input type="text" id="zonefiltre" @bind="filtre" /><button @onclick="Navigate">Rafraîchir liste</button></p>
-<p>
-    <button @onclick="Tentative1">Test 1</button>
-    <button @onclick="Tentative2">Test 2</button>
-    <button @onclick="Tentative3">Test 3</button>
-    <button @onclick="Tentative4">Test 4</button>
-</p>
+<AuthorizeView>
+    <Authorized>
+        <p>Filtre : <input type="text" id="zonefiltre" @bind="filtre" /><button @onclick="Navigate">Rafraîchir liste</button></p>
+        <p>
+            <button @onclick="Tentative1">Test 1</button>
+            <button @onclick="Tentative2">Test 2</button>
+            <button @onclick="Tentative3">Test 3</button>
+            <button @onclick="Tentative4">Test 4</button>
+        </p>
 
-@if (personnes == null)
-{
-    <p><em>Loading...</em></p>
-}
-else
-{
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Nom</th>
-                <th>Prénom</th>
-                <th>Age</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var personne in personnes)
-            {
-                <tr>
-                    <td>@personne.Nom</td>
-                    <td>@personne.Prenom</td>
-                    <td>@personne.Age.ToString()</td>
-                    <td><img src="@personne.UrlPhoto"/></td>
-                </tr>
-            }
-        </tbody>
-    </table>
-}
+        @if (personnes == null)
+        {
+            <p><em>Loading...</em></p>
+        }
+        else
+        {
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Nom</th>
+                        <th>Prénom</th>
+                        <th>Age</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var personne in personnes)
+                    {
+                        <tr>
+                            <td>@personne.Nom</td>
+                            <td>@personne.Prenom</td>
+                            <td>@personne.Age.ToString()</td>
+                            <td><img src="@personne.UrlPhoto"/></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
 
-<h1>Ajouter une personne</h1>
+        <h1>Ajouter une personne</h1>
 
-<div>
-    <EditForm OnSubmit="Creer" Model="PersonneEnCreation">
         <div>
-            Nom : <input type="text" @bind-value="@PersonneEnCreation.Nom" />
+            <EditForm Context="Formulaire" OnSubmit="Creer" Model="PersonneEnCreation">
+                <div>
+                    Nom : <input type="text" @bind-value="@PersonneEnCreation.Nom" />
+                </div>
+                <div>
+                    Prénom : <input type="text" @bind-value="@PersonneEnCreation.Prenom" />
+                </div>
+                <div>
+                    Age : <input type="text" @bind-value="@PersonneEnCreation.Age" />
+                </div>
+                <div>
+        @*            Le bind protège de l'injection !
+        *@            URL Photo : <input type="text" @bind-value="@PersonneEnCreation.UrlPhoto" />
+                </div>
+                <button type="submit" class="btn btn-primary">Créer nouvelle demande</button>
+            </EditForm>
+            <p id="resultatCreation">@CreationMessage</p>
+            <p>
+                <button @onclick="Tentative5">Test 5</button>
+            </p>
+            <p>
+                <button @onclick="TentativeXSS6">Test XSS rémanent</button>
+            </p>
         </div>
-        <div>
-            Prénom : <input type="text" @bind-value="@PersonneEnCreation.Prenom" />
-        </div>
-        <div>
-            Age : <input type="text" @bind-value="@PersonneEnCreation.Age" />
-        </div>
-        <div>
-@*            Le bind protège de l'injection !
-*@            URL Photo : <input type="text" @bind-value="@PersonneEnCreation.UrlPhoto" />
-        </div>
-        <button type="submit" class="btn btn-primary">Créer nouvelle demande</button>
-    </EditForm>
-    <p id="resultatCreation">@CreationMessage</p>
-    <p>
-        <button @onclick="Tentative5">Test 5</button>
-    </p>
-    <p>
-        <button @onclick="TentativeXSS6">Test XSS rémanent</button>
-    </p>
-</div>
+    </Authorized>
+    <NotAuthorized>
+        <p>Ces infos ne sont visibles qu'en mode connecté. Cliquez sur Login en haut à droite</p>
+    </NotAuthorized>
+</AuthorizeView>
 
 @code {
     private Personne PersonneEnCreation = new Personne() { Age = 20 };
@@ -97,11 +104,8 @@ else
 
     void Navigate()
     {
-        //var query = new Dictionary<string, string> { { "indicationNom", filtre } };
-        //Nav.NavigateTo(QueryHelpers.AddQueryString(Nav.Uri, query)); (ne navigue que dans l'URL locale, bref dans l'history, mais ne recharge pas la page)
-
-        // Juste pour faire voir le force reload ; normalement, on changerait plutôt les données par un appel d'API réalisé par le client WASM
-        Nav.NavigateTo("/personnes?indicationNom=" + HttpUtility.UrlEncode(filtre), forceLoad: true); // SECU (A03:2021-Injection) : rend plus simple l'injection, car elle peut être réalisée directement depuis le client et le paramètre est visible
+        var query = new Dictionary<string, string> { { "indicationNom", filtre } };
+        Nav.NavigateTo(QueryHelpers.AddQueryString(Nav.Uri, query));
     }
 
     void Tentative1()

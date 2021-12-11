@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.ResponseCompression;
@@ -5,8 +6,11 @@ using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.IdentityModel.Tokens;
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
 namespace BadSecApp.Server
 {
@@ -25,6 +29,41 @@ namespace BadSecApp.Server
         {
             services.AddControllersWithViews();
             services.AddRazorPages();
+
+            services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+            }).AddJwtBearer(options =>
+            {
+                options.SaveToken = true;
+                options.RequireHttpsMetadata = false;
+                options.TokenValidationParameters = new TokenValidationParameters()
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidAudience = Configuration["JWT:ValidAudience"],
+                    ValidateLifetime = true,
+                    ClockSkew = System.TimeSpan.Zero,
+                    ValidIssuer = Configuration["JWT:ValidIssuer"],
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["JWT:Secret"]))
+                };
+            });
+
+            services.AddAuthorization(o =>
+            {
+                o.AddPolicy("defaultpolicy", b =>
+                {
+                    b.RequireAuthenticatedUser();
+                });
+                o.AddPolicy("apipolicy", b =>
+                {
+                    b.RequireAuthenticatedUser();
+                    b.AuthenticationSchemes = new List<string> { JwtBearerDefaults.AuthenticationScheme };
+                });
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -81,6 +120,9 @@ namespace BadSecApp.Server
             app.UseStaticFiles();
 
             app.UseRouting();
+
+            app.UseAuthentication();
+            app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
             {
