@@ -70,7 +70,7 @@ namespace BadSecApp.Server.Controllers
             }
             else
             {
-                // SECU (A09:2021-Security Logging and Monitoring Failures) : il faut loguer aussi et même surtout les erreurs d'authentification
+                _logger.LogWarning("Tentative d'authentification incorrecte sur le login" + login);
                 return new UnauthorizedResult();
             }
         }
