@@ -4,6 +4,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
@@ -78,10 +80,19 @@ namespace BadSecApp.Server.Controllers
         [HttpGet("validate")]
         public StatusCodeResult ValidateUsersList(string xmlContent)
         {
-            // SECU (A08:2021-Software and Data Integrity Failures) : potentielle attaque par XML bombing, si on laisse du contenu entrer tel quel et qu'on ne met pas de validation ou de limite sur les ressources (mais pas facile à blinder)
-            XmlDocument dom = new XmlDocument();
-            dom.LoadXml(xmlContent);
-            if (dom.SelectNodes("//users").Count > 0)
+            int Compteur = 0;
+            Stopwatch chrono = Stopwatch.StartNew();
+            using (XmlReader lecteur = XmlReader.Create(new StringReader(xmlContent)))
+            {
+                lecteur.ReadStartElement("users");
+                while (lecteur.Read() && chrono.ElapsedMilliseconds < 3000)
+                {
+                    if (lecteur.NodeType == XmlNodeType.EndElement && lecteur.Name == "users") break;
+                    else Compteur++;
+                }
+            }
+
+            if (Compteur > 0)
                 return new OkResult();
             else
                 return NotFound();
