@@ -31,9 +31,7 @@
         {
             if (int.TryParse(name, out var numPub))
             {
-                string URLProxyPublicite = configuration["ServeurPublicite"] + "?page=" + numPub;
-                Console.Write("Publicite : " + URLProxyPublicite);
-                myMarkup = await HttpClient.GetStringAsync(URLProxyPublicite);
+                myMarkup = await HttpClient.GetStringAsync($"api/Publicite?numPub={numPub}");
             }
         }
 
