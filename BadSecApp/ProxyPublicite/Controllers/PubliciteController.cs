@@ -13,8 +13,11 @@ namespace ProxyPublicite.Controllers
     {
         private static List<string> Publicites = null;
 
-        public PubliciteController()
+        private readonly IPubliciteClient _client;
+
+        public PubliciteController(IPubliciteClient client)
         {
+            _client = client;
             if (Publicites == null)
             {
                 // Ces adresses sont légitimes, mais pas http://gouigoux.com/attack.html !
@@ -27,12 +30,29 @@ namespace ProxyPublicite.Controllers
         [HttpGet]
         public string Get([FromQuery] int page = 0)
         {
-            // SECU (A04:2021-Insecure Design) : il faut injecter le client plutôt que le recréer à chaque fois, sinon risque de facilitation de DDOS (ressource lourde à créer)
-            HttpClient client = new HttpClient();
             if (page < 0 || page >= Publicites.Count)
                 return "<p>Pas de publicité pour cette fois !</p>";
+            return _client.GetPublicite(Publicites[page]);
+        }
+    }
 
-            return client.GetStringAsync(Publicites[page]).Result;
+    public interface IPubliciteClient
+    {
+        string GetPublicite(string urlPage);
+    }
+
+    public class PubliciteClient : IPubliciteClient
+    {
+        private readonly HttpClient _client;
+
+        public PubliciteClient(HttpClient client)
+        {
+            _client = client;
+        }
+
+        public string GetPublicite(string urlPage)
+        {
+            return _client.GetStringAsync(urlPage).Result;
         }
     }
 }
