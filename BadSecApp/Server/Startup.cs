@@ -66,7 +66,7 @@ namespace BadSecApp.Server
                 commande.ExecuteNonQuery();
 
                 commande = conn.CreateCommand();
-                commande.CommandText = "INSERT INTO USERS (login, hash) VALUES ('user', 'f71dbe52628a3f83a77ab494817525c6')"; // SECU (A02:2021-Cryptographic Failures) : donnée sensible pas assez obfusquée (MD5 de toto) et présente dans le code, donc dans le GitHub visible de tous
+                commande.CommandText = "INSERT INTO USERS (login, hash) VALUES ('user', 'fb61ee37a22459e67aa1367de3e925b1b866e0e663006eb322ec506edd0103ba')";
                 commande.ExecuteNonQuery();
             }
 
