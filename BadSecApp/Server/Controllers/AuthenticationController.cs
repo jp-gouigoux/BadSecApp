@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.Sqlite;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -18,9 +19,12 @@ namespace BadSecApp.Server.Controllers
     {
         private readonly ILogger<AuthenticationController> _logger;
 
-        public AuthenticationController(ILogger<AuthenticationController> logger)
+        private IConfiguration _config;
+
+        public AuthenticationController(ILogger<AuthenticationController> logger, IConfiguration config)
         {
             _logger = logger;
+            _config = config;
         }
 
         [HttpGet]
@@ -32,13 +36,14 @@ namespace BadSecApp.Server.Controllers
             bool isAuthenticated = false;
             try
             {
-                var content = MD5.Create().ComputeHash(Encoding.UTF8.GetBytes(pwd));
+                var salt = _config.GetValue<string>("sel-pour-mots-de-passe"); // Dans une approche simple, on passe le sel "Zorglub64" en variable d'environnement, mais on pourrait durcir bien sûr encore plus
+                var content = SHA256.Create().ComputeHash(Encoding.UTF8.GetBytes(string.Concat(salt,pwd)));
                 StringBuilder sb = new StringBuilder();
                 foreach (byte b in content)
                     sb.Append(b.ToString("x2"));
                 string hash = sb.ToString().ToLower();
 
-                if (login == "admin" && hash == "84d961568a65073a3bcf0eb216b2a576") // SECU (A02:2021-Cryptographic Failures) : facile à trouver que c'est le hash de superman et MD5 est obsolète
+                if (login == "admin" && hash == "b00d11bc27e970579921c0775b7c15599224b606bb2a582bf94952c956b5a679")
                     isAuthenticated = true;
                 else if (login != "admin")
                 {
