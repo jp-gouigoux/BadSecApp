@@ -28,7 +28,6 @@ namespace BadSecApp.Server.Controllers
                     commande.Parameters.Add(new SqliteParameter("pAge", personne.Age.ToString()));
                     commande.ExecuteNonQuery();
 
-                    // SECU : On croit bien faire en mettant des SqlParameters, mais ça empêche de planter dès la tentative d'envoi de données pour XSS !
                     commande = conn.CreateCommand();
                     commande.CommandText = "INSERT INTO PHOTOS (nom, url) VALUES (@nom, @url)";
                     commande.Parameters.Add(new SqliteParameter("nom", personne.Nom));
