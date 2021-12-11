@@ -43,8 +43,6 @@ else
     </table>
 }
 
-<p class="invisible" id="debug">@DebugMessage</p> <!-- SECU : ne jamais renvoyer des messages développeur pour aider ou alors, au pire, les mettre dans un #if DEBUG -->
-
 <h1>Ajouter une personne</h1>
 
 <div>
@@ -95,8 +93,6 @@ else
 
     private Personne[] personnes;
 
-    private string DebugMessage;
-
     private string filtre { get; set; } = string.Empty;
 
     void Navigate()
@@ -146,9 +142,8 @@ else
             indicationNom = valeurs[0];
 
         string filtre = indicationNom is null ? string.Empty : "?IndicationNom=" + indicationNom;
-        var resultat = await Http.GetFromJsonAsync<Tuple<Personne[], string>>("api/Personnes" + filtre);
-        personnes = resultat.Item1.ToArray();
-        DebugMessage = resultat.Item2;
+        var resultat = await Http.GetFromJsonAsync<Personne[]>("api/Personnes" + filtre);
+        personnes = resultat.ToArray();
         this.StateHasChanged();
     }
 

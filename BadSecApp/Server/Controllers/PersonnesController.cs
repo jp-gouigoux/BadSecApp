@@ -48,53 +48,45 @@ namespace BadSecApp.Server.Controllers
         }
 
         [HttpGet]
-        public Tuple<List<Personne>, string> GetAll([FromQuery] string IndicationNom)
+        public List<Personne> GetAll([FromQuery] string IndicationNom)
         {
             var donnees = new List<Personne>();
-            string erreur = string.Empty;
 
-            try
+            using (var conn = new SqliteConnection("Data Source=test.db"))
             {
-                using (var conn = new SqliteConnection("Data Source=test.db"))
+                conn.Open();
+                var commande = conn.CreateCommand();
+                commande.CommandText = "SELECT nom, prenom, age FROM PERSONNES WHERE nom LIKE '%" + IndicationNom + "%'";
+
+                // SECU (A03:2021-Injection) : Rien de tout ceci ne serait arrivé si le code ci-dessous avait remplacé la ligne précédente
+                //commande.CommandText = "SELECT nom, prenom, age FROM PERSONNES WHERE nom LIKE @chaine";
+                //commande.Parameters.Add(new SqliteParameter("chaine", textBox3.Text + "%"));
+
+                using (var reader = commande.ExecuteReader())
                 {
-                    conn.Open();
-                    var commande = conn.CreateCommand();
-                    commande.CommandText = "SELECT nom, prenom, age FROM PERSONNES WHERE nom LIKE '%" + IndicationNom + "%'";
-
-                    // SECU (A03:2021-Injection) : Rien de tout ceci ne serait arrivé si le code ci-dessous avait remplacé la ligne précédente
-                    //commande.CommandText = "SELECT nom, prenom, age FROM PERSONNES WHERE nom LIKE @chaine";
-                    //commande.Parameters.Add(new SqliteParameter("chaine", textBox3.Text + "%"));
-
-                    using (var reader = commande.ExecuteReader())
+                    while (reader.Read())
                     {
-                        while (reader.Read())
-                        {
-                            donnees.Add(
-                                new Personne()
-                                {
-                                    Nom = reader.GetString(0),
-                                    Prenom = reader.GetString(1),
-                                    Age = reader.GetInt32(2)
-                                });
-                        }
-                    }
-
-                    // SECU : au moins, ici, la donnée qu'on met dans la requête vient du code, donc pas d'injection possible, n'est-ce pas ? Mais il y a peut-être un autre problème, qui peut affecter rapidement la sécurité de l'application...
-                    foreach (Personne p in donnees)
-                    {
-                        commande = conn.CreateCommand();
-                        commande.CommandText = "SELECT url FROM PHOTOS WHERE nom='" + p.Nom + "'";
-                        var reader = commande.ExecuteReader();
-                        reader.Read();
-                        p.UrlPhoto = reader.GetString(0);
+                        donnees.Add(
+                            new Personne()
+                            {
+                                Nom = reader.GetString(0),
+                                Prenom = reader.GetString(1),
+                                Age = reader.GetInt32(2)
+                            });
                     }
                 }
+
+                // SECU : au moins, ici, la donnée qu'on met dans la requête vient du code, donc pas d'injection possible, n'est-ce pas ? Mais il y a peut-être un autre problème, qui peut affecter rapidement la sécurité de l'application...
+                foreach (Personne p in donnees)
+                {
+                    commande = conn.CreateCommand();
+                    commande.CommandText = "SELECT url FROM PHOTOS WHERE nom='" + p.Nom + "'";
+                    var reader = commande.ExecuteReader();
+                    reader.Read();
+                    p.UrlPhoto = reader.GetString(0);
+                }
             }
-            catch (Exception ex)
-            {
-                erreur = ex.ToString();
-            }
-            return new Tuple<List<Personne>, string>(donnees, erreur);
+            return donnees;
         }
         
         [HttpGet("fiche")]
