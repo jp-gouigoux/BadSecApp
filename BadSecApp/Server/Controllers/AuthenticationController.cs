@@ -27,7 +27,7 @@ namespace BadSecApp.Server.Controllers
         public StatusCodeResult Login([FromQuery] string login, [FromQuery] string pwd)
         {
             if (login is null) throw new ArgumentException("login cannot be empty");
-            if (pwd is null) pwd = string.Empty;
+            if (pwd is null) throw new ArgumentException("password cannot be empty");
 
             bool isAuthenticated = false;
             try
