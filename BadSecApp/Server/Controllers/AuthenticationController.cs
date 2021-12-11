@@ -46,8 +46,9 @@ namespace BadSecApp.Server.Controllers
                     {
                         conn.Open();
                         var commande = conn.CreateCommand();
-                        commande.CommandText = "SELECT hash FROM USERS WHERE login='" + login + "'";
-                        if (commande.ExecuteScalar()?.ToString() == hash) // SECU (A01:2021-Broken Access Control) : si on génère une exception en injectant un login avec une apostrophe, par exemple, alors on passe en exception et on considère qu'on est authentifié
+                        commande.CommandText = "SELECT hash FROM USERS WHERE login=@login";
+                        commande.Parameters.Add(new SqliteParameter("login", login));
+                        if (commande.ExecuteScalar()?.ToString() == hash)
                             isAuthenticated = true;
                     }
                 }
