@@ -34,14 +34,5 @@ namespace ProxyPublicite.Controllers
 
             return client.GetStringAsync(Publicites[page]).Result;
         }
-
-        [HttpPost]
-        public int Post()
-        {
-            // SECU (A10:2021-Server-Side Request Forgery) : Cette API permet d'injecter des URLs quelconques qui seront lues comme des publicités, et elle est facile à trouver, même sans Swagger
-            using (StreamReader reader = new StreamReader(Request.Body, Encoding.UTF8))
-                Publicites.Add(reader.ReadToEndAsync().Result);
-            return Publicites.Count - 1;
-        }
     }
 }
