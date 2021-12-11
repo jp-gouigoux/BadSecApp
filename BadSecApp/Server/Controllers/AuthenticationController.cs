@@ -67,12 +67,12 @@ namespace BadSecApp.Server.Controllers
 
             if (isAuthenticated)
             {
-                HttpContext.Session.Set("USER", Encoding.UTF8.GetBytes(login));
+                _logger.LogInformation("Authentification correcte du login " + login);
                 return new OkResult();
             }
             else
             {
-                _logger.LogWarning("Tentative d'authentification incorrecte sur le login" + login);
+                _logger.LogWarning("Tentative d'authentification incorrecte sur le login " + login);
                 return new UnauthorizedResult();
             }
         }

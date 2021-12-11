@@ -23,9 +23,6 @@ namespace BadSecApp.Server
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
-            // SECU (A04:2021-Insecure Design) : voir plus bas
-            services.AddSession();
-
             services.AddControllersWithViews();
             services.AddRazorPages();
         }
@@ -82,9 +79,6 @@ namespace BadSecApp.Server
 
             app.UseBlazorFrameworkFiles();
             app.UseStaticFiles();
-
-            // SECU (A04:2021-Insecure Design) : inactif par défaut, toute augmentation de la surface d'attaque peut poser problème (ainsi que pour la montée en charge, dans ce cas précis, à cause des affinités de sessions)
-            app.UseSession();
 
             app.UseRouting();
 
